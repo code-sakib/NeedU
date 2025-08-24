@@ -1,0 +1,90 @@
+{
+  "project_info": {
+    "project_number": "9095082066",
+    "project_id": "needu-86b9a",
+    "storage_bucket": "needu-86b9a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:9095082066:android:11879eeb71a9be54d32f8b",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "9095082066-00v9cjeimj9meauf3uuqj2ke3f1prl1e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuHtxGFQYcFlIRgtByt9b_xgA7p8yTVx8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "9095082066-00v9cjeimj9meauf3uuqj2ke3f1prl1e.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "9095082066-dnvgg09atbclotgv01iqss75kb301cml.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.needu"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:9095082066:android:27f505da2d2906b9d32f8b",
+        "android_client_info": {
+          "package_name": "com.example.needu"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "9095082066-clfj6j0jvdmm55vvahiq35plht60l83m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.needu",
+            "certificate_hash": "f560183bc6f88e161600d32a684cdd8e1ce56172"
+          }
+        },
+        {
+          "client_id": "9095082066-00v9cjeimj9meauf3uuqj2ke3f1prl1e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuHtxGFQYcFlIRgtByt9b_xgA7p8yTVx8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "9095082066-00v9cjeimj9meauf3uuqj2ke3f1prl1e.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "9095082066-dnvgg09atbclotgv01iqss75kb301cml.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.needu"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

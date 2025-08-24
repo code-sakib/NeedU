@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "9095082066",
+    "project_id": "needu-86b9a",
+    "storage_bucket": "needu-86b9a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:9095082066:android:11879eeb71a9be54d32f8b",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuHtxGFQYcFlIRgtByt9b_xgA7p8yTVx8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:9095082066:android:27f505da2d2906b9d32f8b",
+        "android_client_info": {
+          "package_name": "com.example.needu"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuHtxGFQYcFlIRgtByt9b_xgA7p8yTVx8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

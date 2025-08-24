@@ -1,9 +1,91 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:needu/core/globals.dart';
+import 'package:needu/wallet_page.dart';
 import 'package:needu/core/app_theme.dart';
 import 'package:needu/core/size_config.dart';
 
-class ProfilePage extends StatelessWidget {
+// Reusable SectionHeader widget
+class SectionHeader extends StatelessWidget {
+  final String title;
+  final VoidCallback? onActionPressed;
+  final String? tooltip;
+  final IconData? actionIcon;
+
+  const SectionHeader({
+    super.key,
+    required this.title,
+    this.onActionPressed,
+    this.tooltip,
+    this.actionIcon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(title, style: Theme.of(context).textTheme.titleMedium),
+        if (onActionPressed != null && actionIcon != null)
+          IconButton(
+            onPressed: onActionPressed,
+            icon: Icon(actionIcon, semanticLabel: tooltip),
+            tooltip: tooltip,
+          ),
+      ],
+    );
+  }
+}
+
+// Reusable AppButton widget
+class AppButton extends StatelessWidget {
+  final String text;
+  final VoidCallback onPressed;
+  final IconData? icon;
+
+  const AppButton({
+    super.key,
+    required this.text,
+    required this.onPressed,
+    this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton.icon(
+      onPressed: onPressed,
+      icon: icon != null ? Icon(icon) : SizedBox.shrink(),
+      label: Text(text),
+      style: ElevatedButton.styleFrom(
+        padding: EdgeInsets.symmetric(
+          vertical: SizeConfig.screenHeight * 0.02,
+          horizontal: SizeConfig.screenWidth * 0.04,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+}
+
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  _ProfilePageState createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  // Sample dynamic data for emergency contacts
+  List<Map<String, String>> emergencyContacts = [
+    {'name': 'John Doe', 'phone': '+1234567890'},
+    {'name': 'Jane Smith', 'phone': '+0987654321'},
+  ];
+
+  void addContact(String name, String phone) {
+    setState(() {
+      emergencyContacts.add({'name': name, 'phone': phone});
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,35 +94,32 @@ class ProfilePage extends StatelessWidget {
         child: Center(
           child: Padding(
             padding: EdgeInsets.symmetric(
-              vertical: SizeConfig.screenHeight * 0.08, //8% of screen height
-              horizontal: SizeConfig.screenWidth * 0.05, //5% of screen width
+              vertical: SizeConfig.screenVPadding,
+              horizontal: SizeConfig.screenHPadding,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+                // Profile Picture
                 Stack(
                   children: [
-                    // Circle avatar for profile picture
                     Padding(
-                      padding: const EdgeInsets.all(10.0),
+                      padding: EdgeInsets.all(SizeConfig.paddingSmall),
                       child: CircleAvatar(
                         radius: SizeConfig.screenWidth * 0.15,
-                        backgroundColor: Theme.of(
-                          context,
-                        ).colorScheme.secondary,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
                         child: IconButton(
                           onPressed: () {},
                           icon: Icon(
                             Icons.person_outlined,
                             size: SizeConfig.iconLarge,
+                            semanticLabel: 'Profile Picture',
                           ),
-                        ), // Replace with your image
+                        ),
                       ),
                     ),
-                    // Profile edit icon
                     Positioned(
-                      bottom: 0,
+                      bottom: 5,
                       right: 8,
                       child: Container(
                         decoration: BoxDecoration(
@@ -48,19 +127,24 @@ class ProfilePage extends StatelessWidget {
                           color: AppColors.background,
                         ),
                         child: IconButton(
-                          onPressed: () {},
-                          icon: Icon(Icons.edit_outlined),
+                          onPressed: () {
+                            // Navigate to edit profile picture screen
+                          },
+                          icon: Icon(
+                            Icons.edit_outlined,
+                            semanticLabel: 'Edit Profile Picture',
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
 
-                SizedBox(height: 20),
+                SizedBox(height: SizeConfig.screenHeight * 0.03),
 
-                // Profile name
+                // Profile Name
                 Text(
-                  'User Name',
+                  'User Name', // Replace with dynamic user data
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 Text(
@@ -68,71 +152,78 @@ class ProfilePage extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
 
-                //Emergency contacts
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                SizedBox(height: SizeConfig.screenHeight * 0.03),
 
-                  children: [
-                    Text(
-                      "Emergency Contacts",
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        // Add your button action here
-                      },
-                      icon: Icon(Icons.add_circle_outline),
-                      tooltip: 'Add Contact',
-                    ),
-                  ],
+                // Emergency Contacts
+                SectionHeader(
+                  title: 'Emergency Contacts',
+                  onActionPressed: () {
+                    // Navigate to add contact screen
+                    addContact('New Contact', '+0000000000'); // Example action
+                  },
+                  actionIcon: Icons.add_circle_outline,
+                  tooltip: 'Add Contact',
                 ),
-
                 Card(
-                  child: ListTile(
-                    leading: Icon(
-                      Icons.phone,
-                      size: SizeConfig.blockHeight * 3,
-                    ),
-                    title: Text('John Doe'),
-                    subtitle: Text('+1234567890'),
-                    trailing: IconButton(
-                      icon: Icon(Icons.edit),
-                      onPressed: () {
-                        // Add your edit action here
-                      },
-                    ),
-                  ),
+                  child: emergencyContacts.isEmpty
+                      ? Center(
+                          child: Text(
+                            'No contacts added',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        )
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          padding: EdgeInsets.zero,
+                          itemCount: emergencyContacts.length,
+                          itemBuilder: (context, index) {
+                            final contact = emergencyContacts[index];
+                            return ListTile(
+                              leading: Icon(Icons.phone_outlined),
+                              title: Text(contact['name'] ?? 'Unknown'),
+                              subtitle: Text(
+                                contact['phone'] ?? 'No phone number',
+                              ),
+                              trailing: IconButton(
+                                icon: Icon(Icons.edit_outlined),
+                                onPressed: () {
+                                  setState(() {
+                                    emergencyContacts.removeAt(index);
+                                  });
+                                },
+                                tooltip: 'Delete Contact',
+                              ),
+                            );
+                          },
+                        ),
                 ),
 
-                //Permissions
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Permissions",
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        // Add your button action here
-                      },
-                      icon: Icon(Icons.edit_outlined),
-                      tooltip: 'Edit Permissions',
-                    ),
-                  ],
+                SizedBox(height: SizeConfig.screenHeight * 0.03),
+
+                // Permissions
+                SectionHeader(
+                  title: 'Permissions',
+                  onActionPressed: () {
+                    // Navigate to edit permissions screen
+                  },
+                  actionIcon: Icons.edit_outlined,
+                  tooltip: 'Edit Permissions',
                 ),
                 Card(
                   child: Column(
                     children: [
                       Padding(
-                        padding: const EdgeInsets.all(8.0),
+                        padding: EdgeInsets.all(SizeConfig.paddingSmall),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            Icon(Icons.mic_outlined),
+                            Icon(
+                              Icons.mic_outlined,
+                              semanticLabel: 'Microphone Permission',
+                            ),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.start,
                               children: [
                                 Text(
                                   'Audio Access',
@@ -148,14 +239,16 @@ class ProfilePage extends StatelessWidget {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.all(8.0),
+                        padding: EdgeInsets.all(SizeConfig.paddingSmall),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            Icon(Icons.location_on_outlined),
-                            Wrap(
-                              direction: Axis.vertical,
-                              clipBehavior: Clip.antiAlias,
+                            Icon(
+                              Icons.location_on_outlined,
+                              semanticLabel: 'Location Permission',
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   'Location Access',
@@ -174,21 +267,68 @@ class ProfilePage extends StatelessWidget {
                   ),
                 ),
 
-                //
+                SizedBox(height: SizeConfig.screenHeight * 0.03),
+
+                // Pricing & Wallet
                 const PricingWalletWidget(),
 
-                //
+                SizedBox(height: SizeConfig.screenHeight * 0.03),
+
+                // Key Features
                 const KeyFeaturesWidget(),
 
-                //
+                SizedBox(height: SizeConfig.screenHeight * 0.03),
+
+                // About Version
                 const AboutVersionWidget(),
 
-                ElevatedButton(
+                SizedBox(height: SizeConfig.screenHeight * 0.03),
+
+                // Edit Profile Button
+                AppButton(
+                  text: 'Edit Profile',
                   onPressed: () {
-                    // Add your button action here
                     Navigator.of(context).pop();
                   },
-                  child: Text('Edit Profile'),
+                  icon: Icons.edit,
+                ),
+
+                SizedBox(height: SizeConfig.screenHeight * 0.03),
+
+                // Sign Out Button
+                Container(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () async{
+                      if (isGuest) {
+                        isGuest = false;
+                        context.goNamed('auth');
+                      }
+                      await auth.signOut();
+                    },
+                    style: OutlinedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      side: BorderSide(color: Colors.red),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.logout, color: Colors.red),
+                        SizedBox(width: 8),
+                        Text(
+                          'Sign Out',
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -207,22 +347,30 @@ class PricingWalletWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "Pricing & Wallet",
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        // Pricing Table
+        Text('Pricing & Wallet', style: SizeConfig.sectionTitle),
+        SizedBox(height: SizeConfig.defaultHeight2),
         _buildPricingTable(),
-        SizedBox(height: 24),
-        // Manage Wallet Button
-        _buildManageWalletButton(),
+        SizedBox(height: SizeConfig.defaultHeight2),
+        _buildManageWalletButton(context),
       ],
     );
   }
 
   Widget _buildPricingTable() {
+    final List<PricingPlan> plans = [
+      PricingPlan(
+        name: 'Starter Plan',
+        features: '3 Emergency Services',
+        price: '\$0',
+      ),
+      PricingPlan(
+        name: 'Pro Plan',
+        features: 'Per Service Called',
+        price: '\$1',
+      ),
+    ];
+
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
@@ -230,7 +378,6 @@ class PricingWalletWidget extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Header Row
           Container(
             decoration: BoxDecoration(
               color: AppColors.primary,
@@ -247,34 +394,24 @@ class PricingWalletWidget extends StatelessWidget {
               ],
             ),
           ),
-
-          // Starter Plan Row
-          Container(
-            padding: EdgeInsets.symmetric(vertical: 20),
-            child: Row(
+          ...plans.map(
+            (plan) => Column(
               children: [
-                _buildDataCell('Starter Plan'),
-                _buildDataCell('3 Emergency\nServices'),
-                _buildDataCell('\$0'),
-              ],
-            ),
-          ),
-
-          // Divider
-          Container(
-            height: 1,
-            color: AppColors.border,
-            margin: EdgeInsets.symmetric(horizontal: 16),
-          ),
-
-          // Pro Plan Row
-          Container(
-            padding: EdgeInsets.symmetric(vertical: 20),
-            child: Row(
-              children: [
-                _buildDataCell('Pro Plan'),
-                _buildDataCell('Per Service\nCalled'),
-                _buildDataCell('\$1'),
+                Row(
+                  children: [
+                    _buildDataCell(plan.name),
+                    _buildDataCell(plan.features),
+                    _buildDataCell(plan.price),
+                  ],
+                ),
+                if (plan != plans.last)
+                  Container(
+                    height: 1,
+                    color: AppColors.border,
+                    margin: EdgeInsets.symmetric(
+                      horizontal: SizeConfig.paddingMedium,
+                    ),
+                  ),
               ],
             ),
           ),
@@ -286,14 +423,14 @@ class PricingWalletWidget extends StatelessWidget {
   Widget _buildHeaderCell(String text) {
     return Expanded(
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+        padding: EdgeInsets.all(SizeConfig.paddingSmall),
         child: Text(
           text,
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 18,
+            fontSize: SizeConfig.screenWidth * 0.045,
             fontWeight: FontWeight.w600,
-            color: AppColors.iconSecondary, // Black text on green background
+            color: AppColors.iconSecondary,
           ),
         ),
       ),
@@ -303,12 +440,12 @@ class PricingWalletWidget extends StatelessWidget {
   Widget _buildDataCell(String text) {
     return Expanded(
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 10),
+        padding: EdgeInsets.all(SizeConfig.paddingSmall),
         child: Text(
           text,
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: SizeConfig.screenWidth * 0.04,
             fontWeight: FontWeight.w400,
             color: AppColors.text,
             height: 1.4,
@@ -318,9 +455,8 @@ class PricingWalletWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildManageWalletButton() {
+  Widget _buildManageWalletButton(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(12),
@@ -331,30 +467,37 @@ class PricingWalletWidget extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: () {
-            // Handle manage wallet tap
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const WalletScreen()),
+            );
             print('Manage Wallet tapped');
           },
           child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+            padding: EdgeInsets.all(SizeConfig.paddingSmall),
             child: Row(
               children: [
                 Icon(
                   Icons.account_balance_wallet_outlined,
                   color: AppColors.primary,
-                  size: 24,
+                  size: SizeConfig.screenWidth * 0.06,
+                  semanticLabel: 'Manage Wallet',
                 ),
-                SizedBox(width: 16),
+                SizedBox(width: SizeConfig.paddingMedium),
                 Expanded(
                   child: Text(
                     'Manage Wallet',
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: SizeConfig.screenWidth * 0.045,
                       fontWeight: FontWeight.w500,
                       color: AppColors.primary,
                     ),
                   ),
                 ),
-                Icon(Icons.chevron_right, color: AppColors.primary, size: 24),
+                Icon(
+                  Icons.chevron_right,
+                  color: AppColors.primary,
+                  size: SizeConfig.screenWidth * 0.06,
+                ),
               ],
             ),
           ),
@@ -364,6 +507,17 @@ class PricingWalletWidget extends StatelessWidget {
   }
 }
 
+class PricingPlan {
+  final String name;
+  final String features;
+  final String price;
+
+  PricingPlan({
+    required this.name,
+    required this.features,
+    required this.price,
+  });
+}
 
 class KeyFeaturesWidget extends StatelessWidget {
   static const List<String> features = [
@@ -375,77 +529,60 @@ class KeyFeaturesWidget extends StatelessWidget {
     'Perfect for situations where making sound could increase danger',
   ];
 
-   const KeyFeaturesWidget({super.key});
+  const KeyFeaturesWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return _buildKeyFeaturesSection();
-  }
-
-  Widget _buildKeyFeaturesSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Title
-        Padding(
-          padding: EdgeInsets.only(left: 16, bottom: 20),
-          child: Text(
-            'Key Features',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w600,
-              color: AppColors.text,
-            ),
-          ),
-        ),
-        
-        // Features Card
+        Text('Key Features', style: SizeConfig.sectionTitle),
+        SizedBox(height: SizeConfig.defaultHeight2),
         Container(
-          margin: EdgeInsets.symmetric(horizontal: 16),
-          padding: EdgeInsets.all(24),
+          padding: EdgeInsets.all(SizeConfig.paddingSmall),
           decoration: BoxDecoration(
             color: AppColors.surface,
+
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: AppColors.border,
-              width: 1,
-            ),
+            border: Border.all(color: AppColors.border, width: 1),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: features.map((feature) => _buildFeatureItem(feature)).toList(),
+            children: features
+                .map((feature) => _buildFeatureItem(context, feature))
+                .toList(),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildFeatureItem(String text) {
+  Widget _buildFeatureItem(BuildContext context, String text) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(
+        vertical: 6.0,
+      ), // spacing between items
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Green bullet point
           Container(
-            margin: EdgeInsets.only(top: 8, right: 12),
-            width: 6,
-            height: 6,
+            margin: const EdgeInsets.only(
+              top: 6,
+            ), // aligns bullet with first text line
+            width: 8,
+            height: 8,
             decoration: BoxDecoration(
               color: AppColors.primary,
               shape: BoxShape.circle,
             ),
           ),
-          
-          // Feature text
+          const SizedBox(width: 8), // spacing between bullet and text
           Expanded(
             child: Text(
               text,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AppColors.text,
-                height: 1.5,
+                height: 1.5, // line height for readability
               ),
             ),
           ),
@@ -455,70 +592,57 @@ class KeyFeaturesWidget extends StatelessWidget {
   }
 }
 
-
 class AboutVersionWidget extends StatelessWidget {
   const AboutVersionWidget({super.key});
+
+  Future<String> getAppVersion() async {
+    return '1.0.0';
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Title
-        Padding(
-          padding: EdgeInsets.only(left: 16, bottom: 20),
-          child: Text(
-            'About App',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w600,
-              color: AppColors.text,
-            ),
-          ),
-        ),
-        
-        // About Card
+        Text('About App', style: SizeConfig.sectionTitle),
+        SizedBox(height: SizeConfig.defaultHeight2),
         Container(
-          margin: EdgeInsets.symmetric(horizontal: 16),
-          padding: EdgeInsets.all(24),
+          padding: EdgeInsets.all(SizeConfig.paddingSmall),
           decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: AppColors.border,
-              width: 1,
-            ),
+            border: Border.all(color: AppColors.border, width: 1),
           ),
-          child: Row(
-            children: [
-              // Shield Icon
-              Container(
-                width: 40,
-                height: 40,
-                child: Icon(
-                  Icons.shield_outlined,
-                  color: AppColors.primary,
-                  size: 28,
-                ),
-              ),
-              SizedBox(width: 16),
-              
-              // App Version Text
-              Expanded(
-                child: Text(
-                  'RescueMe v1.0.0',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.text,
+          child: FutureBuilder<String>(
+            future: getAppVersion(),
+            builder: (context, snapshot) {
+              return Row(
+                children: [
+                  Icon(
+                    Icons.shield_outlined,
+                    color: AppColors.primary,
+                    size: SizeConfig.screenWidth * 0.07,
+                    semanticLabel: 'App Version',
                   ),
-                ),
-              ),
-            ],
+                  SizedBox(width: SizeConfig.paddingMedium),
+                  Expanded(
+                    child: Text(
+                      snapshot.hasData
+                          ? 'RescueMe v${snapshot.data}'
+                          : 'RescueMe v1.0.0',
+                      style: TextStyle(
+                        fontSize: SizeConfig.screenWidth * 0.045,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.text,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ],
     );
   }
 }
-

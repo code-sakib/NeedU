@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:needu/core/size_config.dart';
 
 class AppColors {
   static const primary = Color(0xFF00FF88);
-  static const secondary = Color(0xFFFF6B35);
+  static const secondary = Color(0xFF00CC6A);
   static const background = Color(0xFF0F0F0F);
   static const surface = Color(0xFF1E1E1E);
   static const border = Color(0xFF333333);
@@ -14,15 +15,24 @@ class AppColors {
   // static const iconPrimary = Color(0xFF00CC6A); // Green (active/selected)
   static const iconSecondary = Color(0xFF000000); // Black (inactive)
   static const iconMuted = Color(0xFFB0B0B0); // Grey (disabled/muted)
+
+
+  
 }
 
 class AppTypography {
   static TextTheme textTheme() {
-    return const TextTheme(
+    return TextTheme(
       // Large Title
       titleLarge: TextStyle(
-        fontSize: 26,
+        fontSize: SizeConfig.blockWidth * 8,
         fontWeight: FontWeight.w700,
+        color: AppColors.text,
+      ),
+      // Medium Title
+      titleMedium: TextStyle(
+        fontSize: SizeConfig.blockWidth * 4,
+        fontWeight: FontWeight.w300,
         color: AppColors.text,
       ),
       // Subtitle
@@ -31,12 +41,7 @@ class AppTypography {
         fontWeight: FontWeight.w600,
         color: AppColors.primary,
       ),
-      // Medium Title
-      titleMedium: TextStyle(
-        fontSize: 22,
-        fontWeight: FontWeight.w600,
-        color: AppColors.text,
-      ),
+      
       // Label - Body text
       bodyLarge: TextStyle(
         fontSize: 16,

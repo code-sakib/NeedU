@@ -2,6 +2,40 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>GIDClientID</key>
+	<string>9095082066-dnvgg09atbclotgv01iqss75kb301cml.apps.googleusercontent.com</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+	<dict>
+		<key>CFBundleTypeRole</key>
+		<string>Editor</string>
+		<key>CFBundleURLSchemes</key>
+		<array>
+			<string>com.googleusercontent.apps.9095082066-dnvgg09atbclotgv01iqss75kb301cml</string>
+		</array>
+	</dict>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+    <string>audio</string>
+	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We need to record your voice for demonstration purposes.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs location access to share your location with emergency contacts.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app needs background location access to keep you safe during emergencies.</string>
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<true/>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+	<string>tel</string>
+	</array>
+	<!-- Needed for reCAPTCHA -->
+	<key>NSUserTrackingUsageDescription</key>
+	<string>This identifier will be used to verify your identity with Firebase Phone Auth.</string>
+	<key>CFBundleAllowMixedLocalizations</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
