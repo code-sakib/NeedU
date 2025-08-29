@@ -99,6 +99,8 @@ class AudioServices2 {
       return null;
     }
 
+    //not global because of current time fetching
+
     final now = DateTime.now();
     final datePath = '${now.year}-${now.month}-${now.day}';
     final fileName = 'rec_${now.hour}.${now.minute}.${now.second}.m4a';

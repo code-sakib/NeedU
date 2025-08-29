@@ -1,16 +1,16 @@
 // auth_services.dart (renamed from audio_services.dart for clarity, as it handles authentication UI)
 
 import 'package:email_validator/email_validator.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:needu/core/app_theme.dart';
-import 'package:needu/core/data_state.dart';
 import 'package:needu/core/globals.dart';
-import 'package:needu/core/size_config.dart';
+import 'package:needu/utilis/size_config.dart';
 import 'package:needu/features/auth/firebase_auth_services.dart';
 
 enum AuthState { signIn, signUp, phoneAuth }
+
+bool _allowedSignUp = false;
 
 AuthState _authState = AuthState.signIn;
 
@@ -64,35 +64,15 @@ Widget authButton({
     width: double.infinity,
     height: 56,
     child: isPrimary
-        ? ElevatedButton.icon(
+        ? ElevatedButton(
             onPressed: onPressed,
-            icon: const Icon(Icons.check, color: Colors.black), // optional
-            label: Text(
+
+            child: Text(
               text,
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: Colors.black,
-              ),
-            ),
-            style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.resolveWith<Color>(
-                (states) {
-                  if (states.contains(MaterialState.pressed)) {
-                    return const Color(0xFF00CC66); // darker when pressed
-                  }
-                  return const Color(0xFF00FF88); // normal
-                },
-              ),
-              overlayColor: MaterialStateProperty.all<Color>(
-                Colors.black.withOpacity(0.1), // ripple overlay
-              ),
-              elevation: MaterialStateProperty.resolveWith<double>((states) {
-                if (states.contains(MaterialState.pressed)) return 4; // lift up
-                return 0;
-              }),
-              shape: MaterialStateProperty.all(
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
           )
@@ -101,7 +81,8 @@ Widget authButton({
             icon: gImg
                 ? Padding(
                     padding: EdgeInsets.symmetric(
-                      vertical: SizeConfig.defaultIconSize,
+                      vertical: SizeConfig
+                          .blockHeight, // 1% of screen height = icon size
                     ),
                     child: Image.asset('assets/google_logo.png'),
                   )
@@ -181,22 +162,27 @@ class _AuthTextFieldState extends State<AuthTextField> {
                           });
                         },
                         icon: _obscureText
-                            ? const Icon(Icons.visibility,
-                                color: AppColors.iconMuted)
-                            : const Icon(Icons.visibility_off,
-                                color: AppColors.iconMuted),
+                            ? const Icon(
+                                Icons.visibility,
+                                color: AppColors.iconMuted,
+                              )
+                            : const Icon(
+                                Icons.visibility_off,
+                                color: AppColors.iconMuted,
+                              ),
                       )
                     : null,
                 filled: true,
                 fillColor: AppColors.surface,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide:
-                      const BorderSide(color: AppColors.primary, width: 1),
+                  borderSide: const BorderSide(
+                    color: AppColors.primary,
+                    width: 1,
+                  ),
                 ),
                 contentPadding: EdgeInsets.all(SizeConfig.paddingSmall),
               ),
@@ -243,8 +229,8 @@ class _SignInState extends State<SignIn> {
             tFController: emailController,
             validator: (email) =>
                 email != null && EmailValidator.validate(email)
-                    ? null
-                    : "Enter a valid email",
+                ? null
+                : "Enter a valid email",
           ),
 
           AuthTextField(
@@ -289,7 +275,7 @@ class _SignInState extends State<SignIn> {
             onPressed: () async {
               isGuest = true;
               await AuthService().signOut();
-              context.go('/sosPage');
+              context.go('/sos_page');
             },
             isPrimary: false,
           ),
@@ -338,6 +324,7 @@ class _SignUpState extends State<SignUp> {
   final _signUpFormKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final nameController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -354,14 +341,24 @@ class _SignUpState extends State<SignUp> {
           SizedBox(height: SizeConfig.defaultHeight2),
 
           AuthTextField(
+            label: 'Name *',
+            hint: 'Your name please',
+            icon: Icons.person_outline,
+            tFController: nameController,
+            validator: (name) => name != null && name.length >= 2
+                ? null
+                : "Name must be at least 2 characters",
+          ),
+
+          AuthTextField(
             label: 'Email *',
             hint: 'Enter your email',
             icon: Icons.email_outlined,
             tFController: emailController,
             validator: (email) =>
                 email != null && EmailValidator.validate(email)
-                    ? null
-                    : "Enter a valid email",
+                ? null
+                : "Enter a valid email",
           ),
 
           AuthTextField(
@@ -388,13 +385,33 @@ class _SignUpState extends State<SignUp> {
               }
             },
           ),
-          SizedBox(height: SizeConfig.defaultHeight1),
-          authButton(
-            text: 'Sign Up with Google',
-            onPressed: AuthService.googleAuthenticating,
-            isPrimary: false,
-            gImg: true,
+
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                divider(),
+                const Text('  or continue with  socials  '),
+                divider(),
+              ],
+            ),
           ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              socialsButton(
+                Image.asset('assets/google_logo.png'),
+                AuthService.googleAuthenticating,
+              ),
+              socialsButton(
+                Image.asset('assets/apple_logo.png'),
+                AuthService.googleAuthenticating,
+              ),
+            ],
+          ),
+
           SizedBox(height: SizeConfig.defaultHeight2),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -438,8 +455,10 @@ class PhoneAuth extends StatefulWidget {
 
 class _PhoneAuthState extends State<PhoneAuth> {
   final phoneController = TextEditingController();
-  final List<TextEditingController> otpControllers =
-      List.generate(6, (_) => TextEditingController());
+  final List<TextEditingController> otpControllers = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
   final List<FocusNode> focusNodes = List.generate(6, (_) => FocusNode());
 
   String? verificationId;
@@ -465,9 +484,9 @@ class _PhoneAuthState extends State<PhoneAuth> {
           otpSent = true;
           isLoading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("OTP sent!")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("OTP sent!")));
       },
       onVerified: (user) {
         setState(() => isLoading = false);
@@ -479,9 +498,9 @@ class _PhoneAuthState extends State<PhoneAuth> {
       },
       onError: (error) {
         setState(() => isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: $error")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $error")));
       },
     );
   }
@@ -492,9 +511,9 @@ class _PhoneAuthState extends State<PhoneAuth> {
 
     final otp = otpControllers.map((c) => c.text).join();
     if (otp.length != 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Enter complete OTP")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Enter complete OTP")));
       return;
     }
 
@@ -511,9 +530,9 @@ class _PhoneAuthState extends State<PhoneAuth> {
       // Navigate to home or SOS page
       context.go('/sosPage');
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Invalid OTP")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Invalid OTP")));
     }
   }
 
@@ -525,19 +544,20 @@ class _PhoneAuthState extends State<PhoneAuth> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Phone Sign In',
-            style: TextStyle(
-                fontSize: 48, fontWeight: FontWeight.bold, color: Colors.white)),
+        const Text(
+          'Phone Sign In',
+          style: TextStyle(
+            fontSize: 48,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
         const SizedBox(height: 16),
         Text(
           otpSent
               ? 'Enter the 6-digit code sent to\n${phoneController.text}'
               : 'Enter your phone number to receive\na verification code',
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey[400],
-            height: 1.4,
-          ),
+          style: TextStyle(fontSize: 16, color: Colors.grey[400], height: 1.4),
         ),
         const SizedBox(height: 60),
 
@@ -662,4 +682,35 @@ class _PhoneAuthState extends State<PhoneAuth> {
     }
     super.dispose();
   }
+}
+
+SizedBox divider() {
+  return SizedBox(
+    width: SizeConfig.screenWidth / 6,
+    child: Divider(thickness: 1),
+  );
+}
+
+Widget socialsButton(Widget icondata, VoidCallback onPressed) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 30),
+    child: SizedBox(
+      height: 60,
+      width: 60,
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: IconButton(onPressed: onPressed, icon: icondata),
+      ),
+    ),
+  );
 }

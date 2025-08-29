@@ -45,6 +45,10 @@ dependencies:
   path_provider: ^2.1.5
   firebase_storage: ^13.0.0
   cloud_firestore: ^6.0.0
+  material_icons_named: ^3.16.0+2
+  material_symbols_icons: ^4.2867.0
+  intl_phone_field: ^3.2.0
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_test:

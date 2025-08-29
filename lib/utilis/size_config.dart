@@ -40,7 +40,7 @@ class SizeConfig {
     paddingSmall = blockHeight * 2; // Small padding (0.5% of screen height)
     paddingMedium = blockHeight * 6; // Medium padding (1% of screen height)
     paddingLarge = blockHeight * 9; // Large padding (2% of screen height
-    screenVPadding = blockHeight * 8; // Main content padding (3% of screen height)
+    screenVPadding = blockHeight * 2; // Main content padding (3% of screen height)
     screenHPadding = blockWidth * 4; // Main content padding (4% of screen width)
     defaultHeight1 = blockHeight * 6; // Default difference between heights for elements
     defaultHeight2 = blockHeight * 3; // Default difference between heights for elements

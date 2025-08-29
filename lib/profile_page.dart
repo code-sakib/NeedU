@@ -1,9 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:needu/core/globals.dart';
+import 'package:needu/features/audio/emergency_contacts.dart';
 import 'package:needu/wallet_page.dart';
 import 'package:needu/core/app_theme.dart';
-import 'package:needu/core/size_config.dart';
+import 'package:needu/utilis/size_config.dart';
 
 // Reusable SectionHeader widget
 class SectionHeader extends StatelessWidget {
@@ -11,6 +13,7 @@ class SectionHeader extends StatelessWidget {
   final VoidCallback? onActionPressed;
   final String? tooltip;
   final IconData? actionIcon;
+  final Widget? actionWidget;
 
   const SectionHeader({
     super.key,
@@ -18,6 +21,7 @@ class SectionHeader extends StatelessWidget {
     this.onActionPressed,
     this.tooltip,
     this.actionIcon,
+    this.actionWidget,
   });
 
   @override
@@ -25,12 +29,17 @@ class SectionHeader extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: Theme.of(context).textTheme.titleMedium),
+        Text(title, style: SizeConfig.sectionTitle),
         if (onActionPressed != null && actionIcon != null)
           IconButton(
             onPressed: onActionPressed,
             icon: Icon(actionIcon, semanticLabel: tooltip),
             tooltip: tooltip,
+          ),
+        if (actionWidget != null)
+          Padding(
+            padding: EdgeInsets.all(SizeConfig.defaultIconSize),
+            child: actionWidget,
           ),
       ],
     );
@@ -75,17 +84,13 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  // Sample dynamic data for emergency contacts
-  List<Map<String, String>> emergencyContacts = [
-    {'name': 'John Doe', 'phone': '+1234567890'},
-    {'name': 'Jane Smith', 'phone': '+0987654321'},
-  ];
+  // // Sample dynamic data for emergency contacts
 
-  void addContact(String name, String phone) {
-    setState(() {
-      emergencyContacts.add({'name': name, 'phone': phone});
-    });
-  }
+  // void addContact(String name, String phone) {
+  //   setState(() {
+  //     emergencyContacts.value.add({'name': name, 'phone': phone});
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -101,103 +106,97 @@ class _ProfilePageState extends State<ProfilePage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // Profile Picture
-                Stack(
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Padding(
-                      padding: EdgeInsets.all(SizeConfig.paddingSmall),
-                      child: CircleAvatar(
-                        radius: SizeConfig.screenWidth * 0.15,
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        child: IconButton(
-                          onPressed: () {},
-                          icon: Icon(
-                            Icons.person_outlined,
-                            size: SizeConfig.iconLarge,
-                            semanticLabel: 'Profile Picture',
-                          ),
-                        ),
-                      ),
+                    IconButton(
+                      onPressed: () => context.go('/sos_page'),
+                      icon: Icon(Icons.arrow_back),
                     ),
-                    Positioned(
-                      bottom: 5,
-                      right: 8,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(25),
-                          color: AppColors.background,
-                        ),
-                        child: IconButton(
-                          onPressed: () {
-                            // Navigate to edit profile picture screen
-                          },
-                          icon: Icon(
-                            Icons.edit_outlined,
-                            semanticLabel: 'Edit Profile Picture',
+                    Stack(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: SizeConfig.paddingLarge,
+                            vertical: SizeConfig.paddingSmall,
+                          ),
+                          child: CircleAvatar(
+                            radius: SizeConfig.screenWidth * 0.15,
+                            backgroundColor:
+                                isGuest || currentUser.profilePhotoUrl == null
+                                ? Theme.of(context).colorScheme.primary
+                                : null,
+                            backgroundImage:
+                                isGuest || currentUser.profilePhotoUrl == null
+                                ? null
+                                : Image.network(
+                                    currentUser.profilePhotoUrl!,
+
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) =>
+                                            CupertinoActivityIndicator(
+                                              color: AppColors.iconSecondary,
+                                            ),
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            const Icon(
+                                              Icons.error_outline_outlined,
+                                            ),
+                                  ).image,
+
+                            child:
+                                isGuest || currentUser.profilePhotoUrl == null
+                                ? Icon(
+                                    Icons.person_outlined,
+                                    size: SizeConfig.iconLarge,
+                                    semanticLabel: 'Profile Picture',
+                                  )
+                                : null,
                           ),
                         ),
-                      ),
+                        // Positioned(
+                        //   bottom: 5,
+                        //   right: 8,
+                        //   child: Container(
+                        //     decoration: BoxDecoration(
+                        //       borderRadius: BorderRadius.circular(25),
+                        //       color: AppColors.background,
+                        //     ),
+                        //     child: IconButton(
+                        //       onPressed: () {
+                        //         // Navigate to edit profile picture screen
+                        //       },
+                        //       icon: Icon(
+                        //         Icons.edit_outlined,
+                        //         semanticLabel: 'Edit Profile Picture',
+                        //       ),
+                        //     ),
+                        //   ),
+                        // ),
+                      ],
                     ),
                   ],
                 ),
 
                 SizedBox(height: SizeConfig.screenHeight * 0.03),
 
+
                 // Profile Name
                 Text(
-                  'User Name', // Replace with dynamic user data
+                  '${isGuest ? 'Guest User' : currentUser?.name}',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 Text(
-                  'Guest User',
+                  'Free Plan',
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
 
                 SizedBox(height: SizeConfig.screenHeight * 0.03),
 
                 // Emergency Contacts
-                SectionHeader(
-                  title: 'Emergency Contacts',
-                  onActionPressed: () {
-                    // Navigate to add contact screen
-                    addContact('New Contact', '+0000000000'); // Example action
-                  },
-                  actionIcon: Icons.add_circle_outline,
-                  tooltip: 'Add Contact',
-                ),
-                Card(
-                  child: emergencyContacts.isEmpty
-                      ? Center(
-                          child: Text(
-                            'No contacts added',
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                        )
-                      : ListView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          padding: EdgeInsets.zero,
-                          itemCount: emergencyContacts.length,
-                          itemBuilder: (context, index) {
-                            final contact = emergencyContacts[index];
-                            return ListTile(
-                              leading: Icon(Icons.phone_outlined),
-                              title: Text(contact['name'] ?? 'Unknown'),
-                              subtitle: Text(
-                                contact['phone'] ?? 'No phone number',
-                              ),
-                              trailing: IconButton(
-                                icon: Icon(Icons.edit_outlined),
-                                onPressed: () {
-                                  setState(() {
-                                    emergencyContacts.removeAt(index);
-                                  });
-                                },
-                                tooltip: 'Delete Contact',
-                              ),
-                            );
-                          },
-                        ),
-                ),
+                isGuest
+                    ? guestEcCard(context)
+                    : EmergencyContacts(),
 
                 SizedBox(height: SizeConfig.screenHeight * 0.03),
 
@@ -214,7 +213,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: Column(
                     children: [
                       Padding(
-                        padding: EdgeInsets.all(SizeConfig.paddingSmall),
+                        padding: EdgeInsets.symmetric(
+                          vertical: SizeConfig.paddingSmall,
+                        ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
@@ -239,7 +240,9 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.all(SizeConfig.paddingSmall),
+                        padding: EdgeInsets.symmetric(
+                          vertical: SizeConfig.paddingSmall,
+                        ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
@@ -284,25 +287,13 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 SizedBox(height: SizeConfig.screenHeight * 0.03),
 
-                // Edit Profile Button
-                AppButton(
-                  text: 'Edit Profile',
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  icon: Icons.edit,
-                ),
-
-                SizedBox(height: SizeConfig.screenHeight * 0.03),
-
                 // Sign Out Button
-                Container(
-                  width: double.infinity,
+                SizedBox(
                   child: OutlinedButton(
-                    onPressed: () async{
+                    onPressed: () async {
                       if (isGuest) {
                         isGuest = false;
-                        context.goNamed('auth');
+                        context.go('/');
                       }
                       await auth.signOut();
                     },
@@ -645,4 +636,26 @@ class AboutVersionWidget extends StatelessWidget {
       ],
     );
   }
+}
+
+Widget guestEcCard(BuildContext context) {
+  return GestureDetector(
+    onTap: () {
+      isGuest = false;
+      context.go('/');
+    },
+    child: Card(
+      child: Padding(
+        padding: EdgeInsets.all(SizeConfig.screenHPadding),
+        child: Center(
+          child: Text(
+            'Login to add emergency contacts',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium!.copyWith(color: AppColors.primary),
+          ),
+        ),
+      ),
+    ),
+  );
 }

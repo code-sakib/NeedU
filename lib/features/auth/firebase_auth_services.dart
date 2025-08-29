@@ -2,7 +2,6 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:needu/cloud_db.dart';
 import 'package:needu/core/data_state.dart';
 import 'package:needu/core/globals.dart';
 import 'package:needu/utilis/snackbar.dart'; // Assuming this is where Utilis.showSnackBar is defined
@@ -15,7 +14,7 @@ class AuthService {
     await DataState.run(() async {
       await auth.createUserWithEmailAndPassword(
           email: email, password: password);
-      await CloudDB.userInitialDBSetup();
+      
     });
   }
 

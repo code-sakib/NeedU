@@ -1,22 +1,14 @@
 // sos_page_and_audio_services.dart
 
-import 'dart:async';
-import 'dart:io';
 import 'dart:math';
-
-import 'package:audioplayers/audioplayers.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:needu/core/app_theme.dart';
 import 'package:needu/core/globals.dart';
-import 'package:needu/core/permission.dart'; // Assuming this handles permissions, but we'll check in service
-import 'package:needu/features/audio/audio_services.dart'; // Import the audio service
-import 'package:path_provider/path_provider.dart';
-import 'package:record/record.dart';
-
-import 'package:needu/core/size_config.dart';
+import 'package:needu/features/audio/emergency_contacts.dart';
 import 'package:needu/profile_page.dart';
+import 'package:needu/utilis/size_config.dart';
 import 'package:needu/utilis/snackbar.dart';
 
 /// ---------------------------------------------------------------------------
@@ -113,13 +105,12 @@ class _SOSPageState extends State<SOSPage> with TickerProviderStateMixin {
 
     // Start recording and upload via service (handles 30s internally).
     Utilis.showSnackBar('Recording emergency message...');
-    final url = await AudioServices2.instance.recordInSafeChunks();
+    // final url = await AudioServices2.instance.recordInSafeChunks();
 
     // Update UI based on result: Show success or failure snackbar.
     // if (finalPath != null) {
     //   Utilis.showSnackBar('Recording uploaded successfully');
     //   debugPrint('Uploaded sos recording: $finalPath');
-    //   // TODO: save url + metadata (user, ts, location) to your DB
     // } else {
     //   Utilis.showSnackBar('Recording or upload failed', isErr: true);
     // }
@@ -376,7 +367,7 @@ class _SOSPageState extends State<SOSPage> with TickerProviderStateMixin {
                                                   .copyWith(
                                                     color: theme
                                                         .colorScheme
-                                                        .background,
+                                                        .surface,
                                                     fontSize: 48,
                                                     fontWeight: FontWeight.bold,
                                                   ),
@@ -397,79 +388,8 @@ class _SOSPageState extends State<SOSPage> with TickerProviderStateMixin {
                 ),
               ),
 
-              ElevatedButton(
-                onPressed: () async {
-                  // Check if last file exists via service.
-                  if (AudioServices2.instance.lastFilePath == null ||
-                      !File(
-                        AudioServices2.instance.lastFilePath!,
-                      ).existsSync()) {
-                    // No file: Show error.
-                    Utilis.showSnackBar(
-                      'No recording available to play',
-                      isErr: true,
-                    );
-                    return;
-                  }
-
-                  // Call service to play.
-                  await AudioServices2.instance.playRecording();
-                },
-                child: const Text('Play recording 2 '),
-              ),
-
-              const SizedBox(height: 16),
-              Text('Emergency Contacts', style: theme.textTheme.headlineMedium),
-              const SizedBox(height: 12),
-              Center(
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: const [
-                        Icon(Icons.person, size: 32),
-                        SizedBox(height: 8),
-                        Text('No emergency contacts added'),
-                        SizedBox(height: 4),
-                        Text('Add contacts in your Profile'),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () async {
-                    isGuest = false;
-                    await auth.signOut();
-                    // ignore: use_build_context_synchronously
-                    context.go('/');
-                  },
-                  style: OutlinedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    side: BorderSide(color: Colors.red),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.logout, color: Colors.red),
-                      SizedBox(width: 8),
-                      Text(
-                        'Sign Out',
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              SizedBox(height: SizeConfig.defaultHeight2),
+              isGuest ? guestEcCard(context) : EmergencyContacts(),
             ],
           ),
         ),

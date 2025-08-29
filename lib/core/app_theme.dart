@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:needu/core/size_config.dart';
+import 'package:needu/utilis/size_config.dart';
 
 class AppColors {
   static const primary = Color(0xFF00FF88);
@@ -9,15 +9,13 @@ class AppColors {
   static const border = Color(0xFF333333);
   static const text = Color(0xFFFFFFFF);
   static const textSecondary = Color(0xFFCCCCCC);
+  static const textErr = Color(0xFFC56363);
   static const textMuted = Color(0xFF888888);
 
   // Icon colors from the UI
   // static const iconPrimary = Color(0xFF00CC6A); // Green (active/selected)
   static const iconSecondary = Color(0xFF000000); // Black (inactive)
   static const iconMuted = Color(0xFFB0B0B0); // Grey (disabled/muted)
-
-
-  
 }
 
 class AppTypography {
@@ -41,7 +39,7 @@ class AppTypography {
         fontWeight: FontWeight.w600,
         color: AppColors.primary,
       ),
-      
+
       // Label - Body text
       bodyLarge: TextStyle(
         fontSize: 16,
@@ -71,8 +69,7 @@ class AppTheme {
         primary: AppColors.primary,
         secondary: Color(0xFF00CC6A),
         surface: AppColors.surface,
-
-        background: AppColors.background,
+        error: Colors.red
       ),
 
       textTheme: AppTypography.textTheme(),
@@ -95,6 +92,37 @@ class AppTheme {
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.text,
         elevation: 0,
+      ),
+
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.secondary,
+          foregroundColor: AppColors.text,
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.surface,
+        hintStyle: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 12,
+          horizontal: 16,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: AppColors.border),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: AppColors.border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: AppColors.primary, width: 2),
+        ),
       ),
     );
   }
