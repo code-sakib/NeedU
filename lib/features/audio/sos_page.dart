@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:needu/cloud_db.dart';
 import 'package:needu/core/globals.dart';
 import 'package:needu/features/audio/audio_services.dart';
 import 'package:needu/features/audio/emergency_contacts.dart';
@@ -100,8 +101,8 @@ class _SOSPageState extends State<SOSPage> with TickerProviderStateMixin {
     Utilis.showSnackBar('Service Triggered!!');
 
     // Start recording and upload via service (handles 30s internally).
-    Utilis.showSnackBar('Recording emergency message...');
     final url = await AudioServices.instance.recordInSafeChunks();
+    CloudDB.uploadedUserLoc();
 
     // Update UI based on result: Show success or failure snackbar.
     // if (finalPath != null) {
@@ -119,10 +120,13 @@ class _SOSPageState extends State<SOSPage> with TickerProviderStateMixin {
   void _startSOSTimer() async {
     // If already processing, ignore press.
     if (_isProcessing) return;
-    // if (isGuest) {
-    //   Utilis.showSnackBar('Login to trigger SOS 🙂', isErr: true);
-    //   return;
-    // }
+    if (isGuest) {
+      Utilis.showSnackBar('Login to trigger SOS 🙂', isErr: true);
+      return;
+    } else if (thisUser!.emergencyContacts.value! == {}) {
+      Utilis.showSnackBar('Add emergency contacts to trigger', isErr: true);
+      return;
+    }
 
     // Update state: Button pressed, reset triggered flag.
     setState(() {
@@ -230,7 +234,7 @@ class _SOSPageState extends State<SOSPage> with TickerProviderStateMixin {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Stay Safe 2', style: theme.textTheme.titleLarge),
+                  Text('Stay Safe', style: theme.textTheme.titleLarge),
                   IconButton(
                     onPressed: () => context.push('/profilePage'),
                     icon: const Icon(Icons.person_2_rounded),

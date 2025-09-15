@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:needu/core/app_theme.dart';
 
 class Utilis {
   static final messengerKey = GlobalKey<ScaffoldMessengerState>();
   static showSnackBar(String msg, {bool isErr = false}) {
     final snackBar = SnackBar(
       content: Text(msg),
-      backgroundColor: isErr ? Colors.redAccent : AppColors.secondary,
+      backgroundColor: isErr ? Color(0xFFEF9A9A) : Color(0xFFADECAF),
       duration: const Duration(seconds: 1, milliseconds: 300),
     );
 

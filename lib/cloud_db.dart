@@ -5,7 +5,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:needu/core/geo_location.dart';
 import 'package:needu/core/globals.dart';
+import 'package:needu/core/model_class.dart';
 import 'package:needu/utilis/snackbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -16,6 +18,11 @@ class CloudDB {
         .collection('users')
         .doc(auth.currentUser?.uid);
     final docSnap = await docRef.get();
+    if (docSnap.exists) {
+      thisUser = CurrentUser(auth.currentUser)
+        ..fromMap(docSnap.data() as Map<String, dynamic>);
+      thisUser!.saveToLocal(thisUser);
+    }
 
     return docSnap.exists;
   }
@@ -30,7 +37,6 @@ class CloudDB {
           .set(thisUser!.toMap());
 
       thisUser!.saveToLocal(thisUser);
-      ;
 
       print("✅ User document created successfully!");
     });
@@ -87,16 +93,17 @@ class CloudDB {
   static Future<void> updateEmergencyContacts(
     Map<String, dynamic> newContacts,
   ) async {
+    print(newContacts.entries);
     tryCatch(() async {
       // Update in Firestore
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(auth.currentUser?.uid)
+          .doc(thisUser?.uid)
           .update({'emergencyContacts': newContacts});
 
       await thisUser?.updateEmergencyContacts(newContacts);
 
-      print("✅ Emergency contacts updated for ${auth.currentUser?.uid}");
+      // print("✅ Emergency contacts updated for ${auth.currentUser?.uid}");
     });
   }
 
@@ -140,7 +147,6 @@ class CloudDB {
   static String? smsCode;
   static Future<void> otpSending(String pNumber, BuildContext context) async {
     tryCatch(() async {
-      Utilis.showSnackBar('Sending to $pNumber');
       await auth.verifyPhoneNumber(
         phoneNumber: pNumber,
         verificationCompleted: (PhoneAuthCredential credential) async {
@@ -161,7 +167,7 @@ class CloudDB {
           print("Auto retrieval timeout. VerificationId: $verificationId");
         },
       );
-    });
+    }, 'Sending to $pNumber');
   }
 
   static Future<bool> otpVerifying(String smsCode) async {
@@ -179,10 +185,18 @@ class CloudDB {
     return true;
   }
 
+  static Future<void> uploadedUserLoc() async {
+    tryCatch(() async {
+      FirebaseFirestore.instance.collection('users').doc('loc').set({
+        'loc': userLatLng,
+      });
+    });
+  }
+
   /// A reusable try-catch wrapper
-  static void tryCatch(Function() f) async {
+  static void tryCatch(Function() f, [String showCustomMsg = '']) async {
     try {
-      Utilis.showLoading(true);
+      showCustomMsg == '' ? null : Utilis.showSnackBar(showCustomMsg);
       await f();
       Utilis.showLoading(false);
     } on FirebaseAuthException catch (e) {

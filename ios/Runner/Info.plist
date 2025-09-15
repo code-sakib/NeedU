@@ -43,6 +43,11 @@
 	<string>This identifier will be used to verify your identity with Firebase Phone Auth.</string>
 	<key>CFBundleAllowMixedLocalizations</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+<string>We need your location to show nearby services.</string>
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>We need your location to show nearby services.</string>
+
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

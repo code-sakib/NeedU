@@ -1,10 +1,9 @@
-import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:needu/account_setup.dart';
 import 'package:needu/cloud_db.dart';
 import 'package:needu/core/globals.dart';
-import 'package:needu/core/model_class.dart';
 import 'package:needu/features/audio/sos_page.dart';
 import 'package:needu/features/auth/auth_services.dart';
 import 'package:needu/profile_page.dart';
@@ -26,7 +25,6 @@ GoRouter appRouting = GoRouter(
       path: '/',
       name: 'auth',
       builder: (context, state) {
-        
         return StreamBuilder(
           stream: auth.authStateChanges(),
           builder: (context, snapshot) {
@@ -46,11 +44,12 @@ GoRouter appRouting = GoRouter(
                     if (snapshot.data == true) {
                       return const SOSPage();
                     } else if (snapshot.data == false) {
-                      
-                      return const PhoneAuth2();
+                      return PhoneAuth2();
                     }
+                  } else if (snapshot.hasError) {
+                    print(snapshot.error.toString());
                   }
-                  return Container();
+                  return AuthScreen();
                 },
               );
             } else if (snapshot.connectionState == ConnectionState.waiting) {
@@ -105,6 +104,8 @@ GoRouter appRouting = GoRouter(
         GoRoute(
           path: '/accountSetup',
           builder: (context, state) {
+            
+
             return PhoneAuth2();
           },
         ),

@@ -2,13 +2,9 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:needu/account_setup.dart';
-import 'package:needu/cloud_db.dart';
 import 'package:needu/core/data_state.dart';
 import 'package:needu/core/globals.dart';
-import 'package:needu/core/model_class.dart';
 import 'package:needu/utilis/snackbar.dart'; // Assuming this is where Utilis.showSnackBar is defined
 
 class AuthService {

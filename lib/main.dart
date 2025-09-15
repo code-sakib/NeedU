@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:needu/app_provider.dart';
 import 'package:needu/core/app_theme.dart';
-import 'package:needu/core/globals.dart';
 import 'package:needu/core/routing.dart';
 import 'package:needu/utilis/size_config.dart';
 import 'package:needu/firebase_options.dart';

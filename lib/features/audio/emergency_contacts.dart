@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:go_router/go_router.dart';
 import 'package:needu/cloud_db.dart';
 import 'package:needu/core/app_theme.dart';
 import 'package:needu/core/globals.dart';
-import 'package:needu/features/auth/auth_services.dart';
 import 'package:needu/utilis/size_config.dart';
+import 'package:needu/utilis/snackbar.dart';
+
+bool addEC = false;
 
 class EmergencyContacts extends StatefulWidget {
   const EmergencyContacts({super.key, this.toUpdateContacts = false});
@@ -49,91 +51,14 @@ class _EmergencyContactsState extends State<EmergencyContacts> {
                 widget.toUpdateContacts
                     ? IconButton(
                         onPressed: () {
-                          {
-                            late final nameController = TextEditingController();
-                            late String fullPhoneNumber;
-                            showDialog(
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog(
-                                  title: Text('Add Emergency Contact'),
-                                  content: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      AuthTextField(
-                                        label: 'Name',
-                                        hint: 'Enter name',
-                                        icon: Icons.person_outline,
-                                        tFController: nameController,
-                                        validator: (name) => name != null
-                                            ? null
-                                            : "Enter Name Please",
-                                      ),
-                                      // IconButton(onPressed: (){}, icon: Icon(Icons.countertops)),
-                                      // Phone field with flags
-                                      SizedBox(
-                                        height: SizeConfig.defaultHeight2,
-                                      ),
-                                      IntlPhoneField(
-                                        showDropdownIcon: false,
-                                        decoration: InputDecoration(
-                                          border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
-                                          ),
-                                          contentPadding: EdgeInsets.all(
-                                            SizeConfig.paddingSmall,
-                                          ),
-                                        ),
-                                        initialCountryCode:
-                                            'IN', // default India
-                                        onChanged: (phone) {
-                                          fullPhoneNumber =
-                                              phone.completeNumber;
-                                          print(fullPhoneNumber); // +91 xxx
-                                        },
-                                      ),
-                                      SizedBox(
-                                        height: SizeConfig.defaultHeight2,
-                                      ),
-                                      authButton(
-                                        text: 'Verify through Otp',
-                                        onPressed: () async {
-                                          var now = DateTime.now();
-
-                                          final Map<String, dynamic> contacts =
-                                              Map.of(
-                                                thisUser!
-                                                        .emergencyContacts
-                                                        .value ??
-                                                    {},
-                                              );
-                                          contacts['id_${now.day}${now.month}${now.year}${now.microsecondsSinceEpoch}'] =
-                                              {'name': nameController.text, 'phone': fullPhoneNumber};
-                                          thisUser!.emergencyContacts.value =
-                                              contacts;
-                                        },
-                                      ),
-                                      SizedBox(height: SizeConfig.blockHeight),
-                                      Text(
-                                        'Verification is necessary to smoothly trigger SOS services',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium!
-                                            .copyWith(
-                                              color: Theme.of(
-                                                context,
-                                              ).colorScheme.error,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            );
+                          if (thisUser!.emergencyContacts.value!.length > 3) {
+                           Utilis.showSnackBar('Only upto 3 contacts can be added for now..', isErr: true);
                           }
+                          addEC = true;
+                           context.push('/accountSetup');
+
                         },
+
                         icon: Icon(Icons.add_circle_outline),
                       )
                     : const SizedBox.shrink(),
@@ -188,7 +113,8 @@ class _EmergencyContactsState extends State<EmergencyContacts> {
                                       contacts.keys.elementAt(index),
                                     );
                                     thisUser!.emergencyContacts.value =
-                                        contacts; // 🔥 this will notify
+                                        contacts; 
+                                    CloudDB.updateEmergencyContacts(contacts);// 🔥 this will notify
                                   },
                                   tooltip: 'Delete Contact',
                                 )

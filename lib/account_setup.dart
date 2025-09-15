@@ -1,21 +1,21 @@
-import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:needu/cloud_db.dart';
 import 'package:needu/core/globals.dart';
 import 'package:needu/core/model_class.dart';
+import 'package:needu/features/audio/emergency_contacts.dart';
 import 'package:needu/features/auth/auth_services.dart';
 import 'package:needu/utilis/sign_out.dart';
 import 'package:needu/utilis/size_config.dart';
 import 'package:needu/utilis/snackbar.dart';
 
 class PhoneAuth2 extends StatelessWidget {
-  const PhoneAuth2({super.key});
+  PhoneAuth2({super.key});
 
-  // final OAuthCredential providerCredentials;
-
-  static late String fullPhoneNumber;
+  static String? fullPhoneNumber;
+  static String? fullN;
   static bool showAccCre = true;
 
   @override
@@ -38,10 +38,10 @@ class PhoneAuth2 extends StatelessWidget {
           padding: EdgeInsets.all(SizeConfig.screenHPadding),
           child: Column(
             children: [
-              const Text(
-                'Account Setup',
+              Text(
+                addEC ? 'Add Emergency Contact' : 'Account Setup',
                 style: TextStyle(
-                  fontSize: 48,
+                  fontSize: 30,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -81,8 +81,9 @@ class PhoneAuth2 extends StatelessWidget {
                 text: 'Send OTP',
                 onPressed: () {
                   if (nameController.text.isNotEmpty &&
-                      fullPhoneNumber.isNotEmpty) {
-                    CloudDB.otpSending(fullPhoneNumber, context);
+                      fullPhoneNumber != null) {
+                    fullN = nameController.text;
+                    CloudDB.otpSending(fullPhoneNumber!, context);
                   } else {
                     Utilis.showSnackBar(
                       'Please enter required details',
@@ -107,11 +108,39 @@ class PhoneAuth2 extends StatelessWidget {
                   if (codeController.text.isEmpty) {
                     Utilis.showSnackBar('Field is blank..', isErr: true);
                   } else {
-                    await CloudDB.otpVerifying(codeController.text).then((v) {
-                      if (v) {
-                        thisUser?.phoneNumber = fullPhoneNumber;
-                        thisUser?.name = nameController.text;
-                        CloudDB.isNewUser();
+                    await CloudDB.otpVerifying(codeController.text).then((
+                      v,
+                    ) async {
+                      if (!addEC) {
+                        if (v) {
+                          thisUser = CurrentUser(auth.currentUser);
+                          thisUser?.phoneNumber = fullPhoneNumber;
+                          thisUser?.name = fullN;
+                          await CloudDB.isNewUser();
+                        }
+                        context.go('/sos_page');
+                      } else {
+                        if (v) {
+                          var now = DateTime.now();
+
+                          final Map<String, dynamic> contacts = Map.of(
+                            thisUser?.emergencyContacts.value ?? {},
+                          );
+
+                          final newKey =
+                              'id_${now.day}${now.month}${now.year}${now.microsecondsSinceEpoch}';
+
+                          contacts[newKey] = {
+                            'name': fullN ?? 'Unknown',
+                            'phone': fullPhoneNumber ?? 'N/A',
+                          };
+
+                          thisUser?.emergencyContacts.value = contacts;
+                          CloudDB.updateEmergencyContacts(contacts);
+                          addEC = false;
+                          Utilis.showSnackBar('Emergency contact added Successfully');
+                          context.pop();
+                        }
                       }
                     });
                   }

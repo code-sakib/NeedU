@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:needu/cloud_db.dart';
 import 'package:needu/core/globals.dart';
 import 'package:needu/features/audio/emergency_contacts.dart';
 import 'package:needu/features/auth/auth_services.dart';
@@ -12,6 +13,7 @@ import 'package:needu/utilis/snackbar.dart';
 import 'package:needu/wallet_page.dart';
 import 'package:needu/core/app_theme.dart';
 import 'package:needu/utilis/size_config.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 // Reusable SectionHeader widget
 class SectionHeader extends StatelessWidget {
@@ -160,13 +162,6 @@ class _ProfilePageState extends State<ProfilePage> {
                               borderRadius: BorderRadius.circular(25),
                               color: AppColors.background,
                             ),
-                            child: IconButton(
-                              onPressed: () => context.goNamed('editProfile'),
-                              icon: const Icon(
-                                Icons.edit_outlined,
-                                semanticLabel: 'Edit Profile Picture',
-                              ),
-                            ),
                           ),
                         ),
                       ],
@@ -199,7 +194,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 SectionHeader(
                   title: 'Permissions',
                   onActionPressed: () {
-                    // Navigate to edit permissions screen
+                    openAppSettings();
                   },
                   actionIcon: Icons.edit_outlined,
                   tooltip: 'Edit Permissions',
@@ -282,7 +277,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 SizedBox(height: SizeConfig.screenHeight * 0.03),
 
-                signOutButton(context)
+                signOutButton(context),
+
+                SizedBox(height: SizeConfig.screenHeight * 0.03),
+                signOutButton(context, true),
               ],
             ),
           ),
@@ -736,16 +734,13 @@ class _EditProfileWidgetState extends State<EditProfileWidget> {
                     isErr: true,
                   );
                 } else {
-                  print(nameController.text);
-                  print(fullPhoneNumber);
-                  print(_selectedImage);
                   if (nameController.text.isNotEmpty &&
                       _selectedImage != null) {
                     print('doing');
-                    // await CloudDB.updateNameAndDP(
-                    //   _selectedImage,
-                    //   nameController.text,
-                    // );
+                    await CloudDB.updateNameAndDP(
+                      _selectedImage,
+                      nameController.text,
+                    );
                   }
                 }
               },

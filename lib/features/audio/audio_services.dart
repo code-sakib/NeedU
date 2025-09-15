@@ -179,7 +179,6 @@ class AudioServices {
       final url = await uploadRecording(finalPath);
       if (url != null) {
         urls.add(url);
-        debugPrint('Uploaded chunk ${1}: $url');
       }
     }
 

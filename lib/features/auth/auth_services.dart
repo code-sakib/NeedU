@@ -3,13 +3,10 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:needu/account_setup.dart';
 import 'package:needu/core/app_theme.dart';
 import 'package:needu/core/globals.dart';
-import 'package:needu/utilis/phone_pkg.dart';
 import 'package:needu/utilis/size_config.dart';
 import 'package:needu/features/auth/firebase_auth_services.dart';
-import 'package:needu/utilis/snackbar.dart';
 
 enum AuthState { signIn, signUp }
 

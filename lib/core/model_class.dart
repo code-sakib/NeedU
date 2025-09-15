@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -34,6 +35,16 @@ class CurrentUser {
       'phoneNumber': phoneNumber,
       'createdAt': createdAt,
     };
+  }
+
+  fromMap(Map<String, dynamic> map) {
+    uid = map['uid'];
+    name = map['name'] ?? null;
+    profilePhotoUrl = map['profilePhotoUrl'] ?? null;
+    emergencyContacts.value = map['emergencyContacts'] ?? {};
+    phoneNumber = map['phoneNumber'] ?? '';
+    createdAt = (map['createdAt'] as Timestamp?)?.toDate();
+
   }
 
    Future<void> saveToLocal(CurrentUser? user) async {
