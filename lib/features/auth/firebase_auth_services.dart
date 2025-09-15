@@ -1,9 +1,14 @@
 // firebase_auth_services.dart
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:needu/account_setup.dart';
+import 'package:needu/cloud_db.dart';
 import 'package:needu/core/data_state.dart';
 import 'package:needu/core/globals.dart';
+import 'package:needu/core/model_class.dart';
 import 'package:needu/utilis/snackbar.dart'; // Assuming this is where Utilis.showSnackBar is defined
 
 class AuthService {
@@ -13,8 +18,9 @@ class AuthService {
   static Future<void> signUpWithEmail(String email, String password) async {
     await DataState.run(() async {
       await auth.createUserWithEmailAndPassword(
-          email: email, password: password);
-      
+        email: email,
+        password: password,
+      );
     });
   }
 
@@ -26,12 +32,12 @@ class AuthService {
   }
 
   // GOOGLE SIGN-IN (fixed method call and wrapped in async error handling)
-  static Future<void> googleAuthenticating() async {
+  static Future<void> googleAuthenticating(BuildContext context) async {
     await DataState.run(() async {
-      final GoogleSignInAccount? gUser = await GoogleSignIn.instance.authenticate();
-      if (gUser == null) return; // User cancelled sign-in
+      final GoogleSignInAccount gUser = await GoogleSignIn.instance
+          .authenticate(); // User cancelled sign-in
 
-      final GoogleSignInAuthentication gAuth = await gUser.authentication;
+      final GoogleSignInAuthentication gAuth = gUser.authentication;
 
       final OAuthCredential credentials = GoogleAuthProvider.credential(
         idToken: gAuth.idToken,
@@ -92,7 +98,4 @@ class AuthService {
       await GoogleSignIn.instance.signOut();
     });
   }
-
-  // CURRENT USER
-  User? get currentUser => _auth.currentUser;
 }

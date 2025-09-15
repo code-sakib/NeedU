@@ -13,6 +13,4 @@ final FirebaseAuth auth = FirebaseAuth.instance;
 FirebaseFirestore  cloudDB = FirebaseFirestore.instance;
 
 //Currentuser
-late CurrentUser currentUser;
-
-  
+late CurrentUser? thisUser;

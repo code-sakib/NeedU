@@ -9,20 +9,20 @@ class CurrentUser {
   late String? name;
   late String? email;
   late String? phoneNumber;
-  late Map? emergencyContacts;
+  late ValueNotifier<Map<String, dynamic>?> emergencyContacts;
   late String? profilePhotoUrl;
   final User? currentUser;
   DateTime? createdAt;
 
   CurrentUser(this.currentUser) {
-    uid = currentUser?.uid ?? '';
+    uid = currentUser!.uid;
     name = currentUser?.displayName;
     email = currentUser?.email;
     phoneNumber = currentUser?.phoneNumber;
-    emergencyContacts = {};
+    emergencyContacts = ValueNotifier({});
     profilePhotoUrl = currentUser?.photoURL;
     createdAt = DateTime.now();
-  }
+  } 
 
   /// Convert CurrentUser to Firestore data
   Map<String, dynamic> toMap() {
@@ -30,23 +30,29 @@ class CurrentUser {
       'uid': uid,
       'name': name,
       'profilePhotoUrl': profilePhotoUrl,
-      'emergencyContacts': emergencyContacts,
+      'emergencyContacts': emergencyContacts.value,
       'phoneNumber': phoneNumber,
       'createdAt': createdAt,
     };
   }
 
-  Future<void> saveToLocal(CurrentUser? user) async {
+   Future<void> saveToLocal(CurrentUser? user) async {
     await SharedPreferences.getInstance().then((prefs) {
       prefs.setString('uid', user?.uid ?? '');
       prefs.setString('email', user?.email ?? '');
       prefs.setString('name', user?.name ?? '');
       prefs.setString('phoneNumber', user?.phoneNumber ?? '');
-      prefs.setString('profilePicUrl', user?.profilePhotoUrl ?? '');
+      prefs.setString('profilePhotoUrl', user?.profilePhotoUrl ?? '');
       prefs.setString(
         'emergencyContacts',
-        jsonEncode(user?.emergencyContacts ?? {}),
+        jsonEncode(user?.emergencyContacts.value ?? {}),
       );
+    });
+  }
+
+  Future<void> updateEmergencyContacts(Map? updatedMap) async {
+    await SharedPreferences.getInstance().then((prefs) {
+      prefs.setString('emergencyContacts', jsonEncode(updatedMap ?? {}));
     });
   }
 
@@ -57,7 +63,7 @@ class CurrentUser {
       String email = prefs.getString('email') ?? '';
       String name = prefs.getString('name') ?? '';
       String phoneNumber = prefs.getString('phoneNumber') ?? '';
-      String profilePicUrl = prefs.getString('profilePicUrl') ?? '';
+      String profilePhotoUrl = prefs.getString('profilePhotoUrl') ?? '';
       String emergencyContacts = prefs.getString('emergencyContacts') ?? '{}';
 
       if (kDebugMode) {
@@ -66,7 +72,7 @@ class CurrentUser {
         print('Email: $email');
         print('Name: $name');
         print('Phone Number: $phoneNumber');
-        print('Profile Pic URL: $profilePicUrl');
+        print('Profile Photo URL: $profilePhotoUrl');
         print('Emergency Contacts: $emergencyContacts');
       }
     });

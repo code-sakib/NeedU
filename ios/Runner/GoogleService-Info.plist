@@ -6,6 +6,8 @@
 	<string>9095082066-dnvgg09atbclotgv01iqss75kb301cml.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
 	<string>com.googleusercontent.apps.9095082066-dnvgg09atbclotgv01iqss75kb301cml</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>9095082066-clfj6j0jvdmm55vvahiq35plht60l83m.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
 	<string>AIzaSyAF3LsNBRLz71BFvh7GCytMxYimz3ycM20</string>
 	<key>GCM_SENDER_ID</key>
@@ -30,9 +32,5 @@
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
 	<string>1:9095082066:ios:c9ec77ed8357ae6ed32f8b</string>
-	<key>GIDClientID</key>
-	<!-- TODO Replace this value: -->
-	<!-- Copied from GoogleService-Info.plist key CLIENT_ID -->
-	<string>9095082066-dnvgg09atbclotgv01iqss75kb301cml.apps.googleusercontent.com</string>
 </dict>
 </plist>

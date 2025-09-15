@@ -4,8 +4,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:needu/core/app_theme.dart';
 import 'package:needu/core/globals.dart';
+import 'package:needu/features/audio/audio_services.dart';
 import 'package:needu/features/audio/emergency_contacts.dart';
 import 'package:needu/profile_page.dart';
 import 'package:needu/utilis/size_config.dart';
@@ -13,7 +13,7 @@ import 'package:needu/utilis/snackbar.dart';
 
 /// ---------------------------------------------------------------------------
 /// Updates Summary:
-/// - Recording now starts ONLY after 3s trigger, lasts for 30s (handled in AudioServices2 via new recordAndUpload method).
+/// - Recording now starts ONLY after 3s trigger, lasts for 30s (handled in AudioServices via new recordAndUpload method).
 /// - Service handles: start, 30s delay, stop, upload, returns URL or null (success/failure).
 /// - Page calls service after trigger, awaits result, shows snackbars for recording start, upload success/fail.
 /// - Removed UI changes: No mic icon, no 'REC Xs' text in button, no recording status below button.
@@ -56,7 +56,7 @@ class _SOSPageState extends State<SOSPage> with TickerProviderStateMixin {
     // Initialize glow animation: Duration 2s, repeats with reverse for pulsing effect.
     _glowController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 1500),
     )..repeat(reverse: true);
 
     // Initialize particle animation: Duration 4s, repeats for continuous movement.
@@ -68,7 +68,7 @@ class _SOSPageState extends State<SOSPage> with TickerProviderStateMixin {
     // Initialize timer animation: Duration 3s for countdown.
     _timerController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3000),
+      duration: const Duration(milliseconds: 2000),
     );
 
     // Add listener to timer: When 3s completes, trigger SOS and start processing.
@@ -89,10 +89,6 @@ class _SOSPageState extends State<SOSPage> with TickerProviderStateMixin {
     // Update state: SOS triggered, release press visual (shrink button).
 
     //kept it here so that guest could enjoy the little animation 🥲
-    if (isGuest) {
-      Utilis.showSnackBar('Login to trigger SOS 🙂', isErr: true);
-      return;
-    }
 
     setState(() {
       _sosTriggered = true;
@@ -105,7 +101,7 @@ class _SOSPageState extends State<SOSPage> with TickerProviderStateMixin {
 
     // Start recording and upload via service (handles 30s internally).
     Utilis.showSnackBar('Recording emergency message...');
-    // final url = await AudioServices2.instance.recordInSafeChunks();
+    final url = await AudioServices.instance.recordInSafeChunks();
 
     // Update UI based on result: Show success or failure snackbar.
     // if (finalPath != null) {
@@ -123,6 +119,10 @@ class _SOSPageState extends State<SOSPage> with TickerProviderStateMixin {
   void _startSOSTimer() async {
     // If already processing, ignore press.
     if (_isProcessing) return;
+    // if (isGuest) {
+    //   Utilis.showSnackBar('Login to trigger SOS 🙂', isErr: true);
+    //   return;
+    // }
 
     // Update state: Button pressed, reset triggered flag.
     setState(() {
@@ -232,7 +232,7 @@ class _SOSPageState extends State<SOSPage> with TickerProviderStateMixin {
                 children: [
                   Text('Stay Safe 2', style: theme.textTheme.titleLarge),
                   IconButton(
-                    onPressed: () => context.go('/profilePage'),
+                    onPressed: () => context.push('/profilePage'),
                     icon: const Icon(Icons.person_2_rounded),
                   ),
                 ],

@@ -150,7 +150,7 @@ class _WalletScreenState extends State<WalletScreen> {
             SizedBox(height: 20),
 
             // Recharge Button
-            Container(
+            SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {},
@@ -226,7 +226,7 @@ class _WalletScreenState extends State<WalletScreen> {
                 ),
               ),
               SizedBox(height: 16),
-              Container(
+              SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
                   onPressed: () {},
@@ -259,7 +259,7 @@ class _WalletScreenState extends State<WalletScreen> {
   }
 
   Widget _buildQuickRechargeButton(String amount, {bool isWide = false}) {
-    return Container(
+    return SizedBox(
       width: isWide ? double.infinity : null,
       height: isWide ? 60 : 50,
       child: OutlinedButton(

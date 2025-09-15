@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Auto Git Commit & Push",
+  "description": "Automatically commits and pushes all modified files to the current git branch whenever any file is saved, with a custom short commit message describing the changes",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "**/*"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A file has been saved in the project. Please:\n\n1. Check git status to see what files have been modified\n2. Add all modified files to staging (git add .)\n3. Create a short, descriptive commit message based on the changes (e.g., \"Update authentication logic\", \"Fix UI layout issues\", \"Add new feature components\")\n4. Commit the changes with the generated message\n5. Push the changes to the current branch\n\nExecute these git commands without asking for permission. Make the commit message concise but descriptive of what was changed."
+  }
+}

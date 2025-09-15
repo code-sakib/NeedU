@@ -1,1 +1,46 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"needu-86b9a","appId":"1:9095082066:android:27f505da2d2906b9d32f8b","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"needu-86b9a","appId":"1:9095082066:ios:c9ec77ed8357ae6ed32f8b","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"needu-86b9a","configurations":{"android":"1:9095082066:android:27f505da2d2906b9d32f8b","ios":"1:9095082066:ios:c9ec77ed8357ae6ed32f8b"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "needu-86b9a",
+          "appId": "1:9095082066:android:27f505da2d2906b9d32f8b",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "needu-86b9a",
+          "appId": "1:9095082066:ios:c9ec77ed8357ae6ed32f8b",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "needu-86b9a",
+          "configurations": {
+            "android": "1:9095082066:android:27f505da2d2906b9d32f8b",
+            "ios": "1:9095082066:ios:c9ec77ed8357ae6ed32f8b"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint"
+      ]
+    }
+  ]
+}

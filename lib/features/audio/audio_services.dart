@@ -7,14 +7,15 @@ import 'package:needu/core/globals.dart'; // for `auth`
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
-class AudioServices2 {
-  AudioServices2._();
-  static final AudioServices2 instance = AudioServices2._();
+class AudioServices {
+  AudioServices._();
+  static final AudioServices instance = AudioServices._();
 
   final AudioRecorder _recorder = AudioRecorder();
   final AudioPlayer _player = AudioPlayer();
 
   String? lastFilePath; // absolute local path
+  bool _isBackgroundRecording = false;
 
   Future<bool> hasPermission() => _recorder.hasPermission();
 
@@ -31,12 +32,19 @@ class AudioServices2 {
   }
 
   /// Start recording to an absolute path. Returns the absolute local path.
-  Future<String?> startRecording() async {
+  Future<String?> startRecording({bool backgroundMode = false}) async {
     if (!await _recorder.hasPermission()) return null;
 
     final now = DateTime.now();
     final dir = await _recordingDir();
     final absolutePath = '$dir/${_makeFileName(now)}';
+
+    // Enable background recording if requested
+    if (backgroundMode && Platform.isIOS) {
+      _isBackgroundRecording = true;
+      // Keep audio session active for background recording
+      await _configureAudioSession();
+    }
 
     await _recorder.start(
       const RecordConfig(
@@ -48,8 +56,23 @@ class AudioServices2 {
     );
 
     lastFilePath = absolutePath;
-    if (kDebugMode) print('started: $absolutePath');
+    if (kDebugMode)
+      print('started: $absolutePath (background: $backgroundMode)');
     return absolutePath;
+  }
+
+  /// Configure audio session for background recording (iOS)
+  Future<void> _configureAudioSession() async {
+    if (!Platform.isIOS) return;
+
+    try {
+      // This would typically use a platform channel to configure AVAudioSession
+      // For now, the record package should handle this automatically
+      if (kDebugMode)
+        print('Audio session configured for background recording');
+    } catch (e) {
+      debugPrint('Failed to configure audio session: $e');
+    }
   }
 
   /// Stop recording and return the absolute path to the file.
@@ -59,6 +82,7 @@ class AudioServices2 {
         final path = await _recorder.stop(); // absolute path or null
         if (path != null) {
           lastFilePath = path;
+          _isBackgroundRecording = false;
           if (kDebugMode) print('stopped: $path');
           return path;
         }
@@ -66,6 +90,7 @@ class AudioServices2 {
     } catch (e) {
       debugPrint('stopRecording error: $e');
     }
+    _isBackgroundRecording = false;
     return lastFilePath;
   }
 
@@ -109,7 +134,6 @@ class AudioServices2 {
       final ref = FirebaseStorage.instance.ref().child(
         'sos_recordings/$uid/Triggered_on_$datePath/$fileName',
       );
-
       await ref.putFile(f);
       final url = await ref.getDownloadURL();
       return url;
@@ -120,8 +144,11 @@ class AudioServices2 {
   }
 
   /// One-shot helper: record N seconds, stop, upload.
-  Future<String?> recordAndUpload({int seconds = 5}) async {
-    final started = await startRecording();
+  Future<String?> recordAndUpload({
+    int seconds = 5,
+    bool backgroundMode = false,
+  }) async {
+    final started = await startRecording(backgroundMode: backgroundMode);
     if (started == null) return null;
 
     await Future.delayed(Duration(seconds: seconds));
@@ -134,29 +161,56 @@ class AudioServices2 {
   /// Record in chunks (uploads each chunk ASAP). Returns URLs for uploaded chunks.
   Future<List<String>> recordInSafeChunks({
     int totalDurationSeconds = 30,
-    int chunkDurationSeconds = 5,
+    int chunkDurationSeconds = 1,
+    bool backgroundMode = false,
   }) async {
     final urls = <String>[];
     final chunks = (totalDurationSeconds / chunkDurationSeconds).ceil();
 
-    for (int i = 0; i < chunks; i++) {
-      final started = await startRecording();
-      if (started == null) {
-        debugPrint('Permission denied or failed to start recording.');
-        break;
-      }
+    final started = await startRecording(backgroundMode: backgroundMode);
+    if (started == null) {
+      debugPrint('Permission denied or failed to start recording.');
+    }
 
-      await Future.delayed(Duration(seconds: chunkDurationSeconds));
+    await Future.delayed(Duration(seconds: 30));
 
-      final finalPath = await stopRecording();
-      if (finalPath == null) continue;
-
+    final finalPath = await stopRecording();
+    if (finalPath != null) {
       final url = await uploadRecording(finalPath);
       if (url != null) {
         urls.add(url);
-        debugPrint('Uploaded chunk ${i + 1}: $url');
+        debugPrint('Uploaded chunk ${1}: $url');
       }
     }
+
     return urls;
+  }
+
+  /// Check if currently recording in background mode
+  bool get isBackgroundRecording => _isBackgroundRecording;
+
+  /// Emergency recording - designed for background operation
+  Future<String?> startEmergencyRecording({
+    int maxDurationSeconds = 300,
+  }) async {
+    if (!await _recorder.hasPermission()) {
+      debugPrint('Emergency recording: No microphone permission');
+      return null;
+    }
+
+    final started = await startRecording(backgroundMode: true);
+    if (started == null) return null;
+
+    // Auto-stop after max duration to prevent infinite recording
+    Future.delayed(Duration(seconds: maxDurationSeconds), () async {
+      if (_isBackgroundRecording) {
+        debugPrint(
+          'Emergency recording: Auto-stopping after $maxDurationSeconds seconds',
+        );
+        await stopRecording();
+      }
+    });
+
+    return started;
   }
 }

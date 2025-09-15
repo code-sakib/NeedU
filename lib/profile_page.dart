@@ -1,8 +1,14 @@
-import 'package:flutter/cupertino.dart';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:needu/core/globals.dart';
 import 'package:needu/features/audio/emergency_contacts.dart';
+import 'package:needu/features/auth/auth_services.dart';
+import 'package:needu/utilis/sign_out.dart';
+import 'package:needu/utilis/snackbar.dart';
 import 'package:needu/wallet_page.dart';
 import 'package:needu/core/app_theme.dart';
 import 'package:needu/utilis/size_config.dart';
@@ -122,30 +128,22 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                           child: CircleAvatar(
                             radius: SizeConfig.screenWidth * 0.15,
-                            backgroundColor:
-                                isGuest || currentUser.profilePhotoUrl == null
+                            backgroundColor: isGuest
+                                ? Theme.of(context).colorScheme.primary
+                                : thisUser?.profilePhotoUrl == null
                                 ? Theme.of(context).colorScheme.primary
                                 : null,
                             backgroundImage:
-                                isGuest || currentUser.profilePhotoUrl == null
-                                ? null
-                                : Image.network(
-                                    currentUser.profilePhotoUrl!,
-
-                                    loadingBuilder:
-                                        (context, child, loadingProgress) =>
-                                            CupertinoActivityIndicator(
-                                              color: AppColors.iconSecondary,
-                                            ),
-                                    errorBuilder:
-                                        (context, error, stackTrace) =>
-                                            const Icon(
-                                              Icons.error_outline_outlined,
-                                            ),
-                                  ).image,
-
-                            child:
-                                isGuest || currentUser.profilePhotoUrl == null
+                                !isGuest && thisUser?.profilePhotoUrl != null
+                                ? NetworkImage(thisUser!.profilePhotoUrl!)
+                                : null,
+                            child: isGuest
+                                ? Icon(
+                                    Icons.person_outlined,
+                                    size: SizeConfig.iconLarge,
+                                    semanticLabel: 'Profile Picture',
+                                  )
+                                : thisUser!.profilePhotoUrl == null
                                 ? Icon(
                                     Icons.person_outlined,
                                     size: SizeConfig.iconLarge,
@@ -154,25 +152,23 @@ class _ProfilePageState extends State<ProfilePage> {
                                 : null,
                           ),
                         ),
-                        // Positioned(
-                        //   bottom: 5,
-                        //   right: 8,
-                        //   child: Container(
-                        //     decoration: BoxDecoration(
-                        //       borderRadius: BorderRadius.circular(25),
-                        //       color: AppColors.background,
-                        //     ),
-                        //     child: IconButton(
-                        //       onPressed: () {
-                        //         // Navigate to edit profile picture screen
-                        //       },
-                        //       icon: Icon(
-                        //         Icons.edit_outlined,
-                        //         semanticLabel: 'Edit Profile Picture',
-                        //       ),
-                        //     ),
-                        //   ),
-                        // ),
+                        Positioned(
+                          bottom: 5,
+                          left: SizeConfig.screenWidth / 2.6,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(25),
+                              color: AppColors.background,
+                            ),
+                            child: IconButton(
+                              onPressed: () => context.goNamed('editProfile'),
+                              icon: const Icon(
+                                Icons.edit_outlined,
+                                semanticLabel: 'Edit Profile Picture',
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -180,10 +176,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 SizedBox(height: SizeConfig.screenHeight * 0.03),
 
-
                 // Profile Name
                 Text(
-                  '${isGuest ? 'Guest User' : currentUser?.name}',
+                  '${isGuest ? 'Guest User' : thisUser?.name}',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 Text(
@@ -196,7 +191,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 // Emergency Contacts
                 isGuest
                     ? guestEcCard(context)
-                    : EmergencyContacts(),
+                    : EmergencyContacts(toUpdateContacts: true),
 
                 SizedBox(height: SizeConfig.screenHeight * 0.03),
 
@@ -287,40 +282,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 SizedBox(height: SizeConfig.screenHeight * 0.03),
 
-                // Sign Out Button
-                SizedBox(
-                  child: OutlinedButton(
-                    onPressed: () async {
-                      if (isGuest) {
-                        isGuest = false;
-                        context.go('/');
-                      }
-                      await auth.signOut();
-                    },
-                    style: OutlinedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      side: BorderSide(color: Colors.red),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.logout, color: Colors.red),
-                        SizedBox(width: 8),
-                        Text(
-                          'Sign Out',
-                          style: TextStyle(
-                            color: Colors.red,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                signOutButton(context)
               ],
             ),
           ),
@@ -421,7 +383,7 @@ class PricingWalletWidget extends StatelessWidget {
           style: TextStyle(
             fontSize: SizeConfig.screenWidth * 0.045,
             fontWeight: FontWeight.w600,
-            color: AppColors.iconSecondary,
+            color: Colors.black,
           ),
         ),
       ),
@@ -527,7 +489,7 @@ class KeyFeaturesWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Key Features', style: SizeConfig.sectionTitle),
+        Text('How this works?', style: SizeConfig.sectionTitle),
         SizedBox(height: SizeConfig.defaultHeight2),
         Container(
           padding: EdgeInsets.all(SizeConfig.paddingSmall),
@@ -658,4 +620,139 @@ Widget guestEcCard(BuildContext context) {
       ),
     ),
   );
+}
+
+class EditProfileWidget extends StatefulWidget {
+  const EditProfileWidget({super.key});
+
+  @override
+  State<EditProfileWidget> createState() => _EditProfileWidgetState();
+}
+
+class _EditProfileWidgetState extends State<EditProfileWidget> {
+  File? _selectedImage;
+  final nameController = TextEditingController();
+  late String fullPhoneNumber;
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedImage = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedImage != null) {
+      setState(() {
+        _selectedImage = File(pickedImage.path);
+        if (isGuest) {
+          context.pop();
+          Utilis.showSnackBar(
+            'Login please to set profile picture',
+            isErr: true,
+          );
+        }
+      });
+    }
+  }
+
+  defaultProfile() {}
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Padding(
+        padding: EdgeInsets.all(SizeConfig.paddingMedium),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Material(
+              color: Theme.of(context).colorScheme.surface,
+              shape: const CircleBorder(),
+              elevation: 6,
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: _pickImage,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: CircleAvatar(
+                    radius: SizeConfig.blockWidth * 12,
+                    backgroundColor: AppColors.background,
+                    backgroundImage: _selectedImage != null
+                        ? FileImage(_selectedImage!)
+                        : null,
+                    child: _selectedImage == null
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.person_2_outlined,
+                                size: 30,
+                                color: AppColors.iconMuted,
+                              ),
+                              Text(
+                                'Tap to upload',
+                                style: Theme.of(context).textTheme.bodySmall!
+                                    .copyWith(color: Colors.grey),
+                              ),
+                            ],
+                          )
+                        : null,
+                  ),
+                ),
+              ),
+            ),
+            AuthTextField(
+              label: 'Name',
+              hint: 'Set Name to',
+              icon: Icons.person_2_outlined,
+
+              tFController: nameController,
+              validator: (name) =>
+                  name == null ? 'Enter valid name please' : null,
+            ),
+
+            SizedBox(height: SizeConfig.defaultHeight2),
+            IntlPhoneField(
+              showDropdownIcon: false,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding: EdgeInsets.all(SizeConfig.paddingSmall),
+                hint: Text('Required to send SOS'),
+              ),
+              initialCountryCode: 'IN', // default India
+              onChanged: (phone) {
+                fullPhoneNumber = phone.completeNumber;
+              },
+            ),
+
+            SizedBox(height: SizeConfig.defaultHeight2),
+
+            authButton(
+              text: 'Done',
+              onPressed: () async {
+                if (isGuest) {
+                  context.pop();
+                  Utilis.showSnackBar(
+                    'Login please to set profile picture',
+                    isErr: true,
+                  );
+                } else {
+                  print(nameController.text);
+                  print(fullPhoneNumber);
+                  print(_selectedImage);
+                  if (nameController.text.isNotEmpty &&
+                      _selectedImage != null) {
+                    print('doing');
+                    // await CloudDB.updateNameAndDP(
+                    //   _selectedImage,
+                    //   nameController.text,
+                    // );
+                  }
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

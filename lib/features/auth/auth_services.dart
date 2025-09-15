@@ -3,12 +3,15 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:needu/account_setup.dart';
 import 'package:needu/core/app_theme.dart';
 import 'package:needu/core/globals.dart';
+import 'package:needu/utilis/phone_pkg.dart';
 import 'package:needu/utilis/size_config.dart';
 import 'package:needu/features/auth/firebase_auth_services.dart';
+import 'package:needu/utilis/snackbar.dart';
 
-enum AuthState { signIn, signUp, phoneAuth }
+enum AuthState { signIn, signUp }
 
 bool _allowedSignUp = false;
 
@@ -41,9 +44,6 @@ class _AuthScreenState extends State<AuthScreen> {
 
                 case AuthState.signUp:
                   return SignUp(toggleState: toggleState);
-
-                case AuthState.phoneAuth:
-                  return PhoneAuth(toggleState: toggleState);
               }
             },
           ),
@@ -258,28 +258,19 @@ class _SignInState extends State<SignIn> {
             },
             isPrimary: true,
           ),
-
-          SizedBox(height: SizeConfig.defaultHeight2),
-
-          authButton(
-            text: 'Sign In with Google',
-            onPressed: AuthService.googleAuthenticating,
-            isPrimary: false,
-            gImg: true,
-          ),
-
           SizedBox(height: SizeConfig.defaultHeight2),
 
           authButton(
             text: 'Continue as Guest',
+            isPrimary: false,
             onPressed: () async {
               isGuest = true;
-              await AuthService().signOut();
+              await auth.signOut();
               context.go('/sos_page');
             },
-            isPrimary: false,
           ),
 
+          SocialButtonsSec(),
           SizedBox(height: SizeConfig.defaultHeight2),
 
           Row(
@@ -325,6 +316,7 @@ class _SignUpState extends State<SignUp> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final nameController = TextEditingController();
+  final pNController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -337,17 +329,6 @@ class _SignUpState extends State<SignUp> {
           Text(
             'Join us to access emergency contacts\nand safety features',
             style: Theme.of(context).textTheme.titleMedium,
-          ),
-          SizedBox(height: SizeConfig.defaultHeight2),
-
-          AuthTextField(
-            label: 'Name *',
-            hint: 'Your name please',
-            icon: Icons.person_outline,
-            tFController: nameController,
-            validator: (name) => name != null && name.length >= 2
-                ? null
-                : "Name must be at least 2 characters",
           ),
 
           AuthTextField(
@@ -372,45 +353,34 @@ class _SignUpState extends State<SignUp> {
                 : "Password must be at least 6 characters",
           ),
 
-          SizedBox(height: SizeConfig.defaultHeight1),
+          SizedBox(height: SizeConfig.defaultHeight2),
 
           authButton(
             text: 'Sign Up',
-            onPressed: () {
+            onPressed: () async {
               if (_signUpFormKey.currentState!.validate()) {
-                AuthService.signUpWithEmail(
+                await AuthService.signUpWithEmail(
                   emailController.text,
                   passwordController.text,
                 );
+                // context.go('/accountSetup');
               }
             },
           ),
 
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                divider(),
-                const Text('  or continue with  socials  '),
-                divider(),
-              ],
-            ),
+          SizedBox(height: SizeConfig.defaultHeight2),
+
+          authButton(
+            text: 'Continue as Guest',
+            isPrimary: false,
+            onPressed: () {
+              isGuest = true;
+              auth.signOut();
+              context.go('/sosPage');
+            },
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              socialsButton(
-                Image.asset('assets/google_logo.png'),
-                AuthService.googleAuthenticating,
-              ),
-              socialsButton(
-                Image.asset('assets/apple_logo.png'),
-                AuthService.googleAuthenticating,
-              ),
-            ],
-          ),
+
+          SocialButtonsSec(isNewUser: true),
 
           SizedBox(height: SizeConfig.defaultHeight2),
           Row(
@@ -444,257 +414,14 @@ class _SignUpState extends State<SignUp> {
 
 // Phone Auth Screen (consolidated PhoneSignIn, OTPVerificationScreen, and PhoneAuth logic)
 // Handles both phone entry and OTP verification in one widget with state management
-class PhoneAuth extends StatefulWidget {
-  final VoidCallback toggleState;
 
-  const PhoneAuth({super.key, required this.toggleState});
+class SocialButtonsSec extends StatelessWidget {
+  const SocialButtonsSec({this.isNewUser = false, super.key});
 
-  @override
-  State<PhoneAuth> createState() => _PhoneAuthState();
-}
+  final bool isNewUser;
 
-class _PhoneAuthState extends State<PhoneAuth> {
-  final phoneController = TextEditingController();
-  final List<TextEditingController> otpControllers = List.generate(
-    6,
-    (_) => TextEditingController(),
-  );
-  final List<FocusNode> focusNodes = List.generate(6, (_) => FocusNode());
-
-  String? verificationId;
-  bool otpSent = false;
-  bool isLoading = false;
-
-  // Send OTP using AuthService
-  Future<void> sendOTP() async {
-    if (phoneController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Enter a valid phone number")),
-      );
-      return;
-    }
-
-    setState(() => isLoading = true);
-
-    await AuthService().verifyPhoneNumber(
-      phone: phoneController.text.trim(),
-      onCodeSent: (verId) {
-        setState(() {
-          verificationId = verId;
-          otpSent = true;
-          isLoading = false;
-        });
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("OTP sent!")));
-      },
-      onVerified: (user) {
-        setState(() => isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Auto-verified! Welcome ${user.phoneNumber}")),
-        );
-        // Navigate to home or SOS page
-        context.go('/sosPage');
-      },
-      onError: (error) {
-        setState(() => isLoading = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Error: $error")));
-      },
-    );
-  }
-
-  // Verify OTP using AuthService
-  Future<void> verifyOTP() async {
-    if (verificationId == null) return;
-
-    final otp = otpControllers.map((c) => c.text).join();
-    if (otp.length != 6) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Enter complete OTP")));
-      return;
-    }
-
-    setState(() => isLoading = true);
-
-    final user = await AuthService().verifyOTP(verificationId!, otp);
-
-    setState(() => isLoading = false);
-
-    if (user != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Login successful: ${user.phoneNumber}")),
-      );
-      // Navigate to home or SOS page
-      context.go('/sosPage');
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Invalid OTP")));
-    }
-  }
-
-  // Resend OTP
-  void resendCode() => sendOTP();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Phone Sign In',
-          style: TextStyle(
-            fontSize: 48,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          otpSent
-              ? 'Enter the 6-digit code sent to\n${phoneController.text}'
-              : 'Enter your phone number to receive\na verification code',
-          style: TextStyle(fontSize: 16, color: Colors.grey[400], height: 1.4),
-        ),
-        const SizedBox(height: 60),
-
-        if (!otpSent)
-          AuthTextField(
-            label: 'Phone Number *',
-            hint: 'Enter your phone number',
-            icon: Icons.phone_outlined,
-            tFController: phoneController,
-            validator: (phone) =>
-                phone != null && phone.length >= 10 ? null : "Invalid phone",
-          ),
-
-        if (otpSent)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(6, (index) => _buildOTPField(index)),
-          ),
-
-        const SizedBox(height: 40),
-        isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : authButton(
-                text: otpSent ? 'Verify Code' : 'Send Code',
-                onPressed: otpSent ? verifyOTP : sendOTP,
-              ),
-        const SizedBox(height: 24),
-
-        if (otpSent)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Didn't receive code? ",
-                style: TextStyle(fontSize: 16, color: Colors.grey[400]),
-              ),
-              GestureDetector(
-                onTap: resendCode,
-                child: const Text(
-                  'Resend',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF00FF88),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-        if (!otpSent)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Prefer email? ",
-                style: TextStyle(fontSize: 16, color: Colors.grey[400]),
-              ),
-              GestureDetector(
-                onTap: () {
-                  _authState = AuthState.signIn;
-                  widget.toggleState();
-                },
-                child: const Text(
-                  'Sign In with Email',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF00FF88),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-      ],
-    );
-  }
-
-  Widget _buildOTPField(int index) {
-    return Container(
-      width: 50,
-      height: 60,
-      decoration: BoxDecoration(
-        color: const Color(0xFF2A2A2A),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF3A3A3A)),
-      ),
-      child: TextField(
-        controller: otpControllers[index],
-        focusNode: focusNodes[index],
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-        keyboardType: TextInputType.number,
-        maxLength: 1,
-        decoration: const InputDecoration(
-          border: InputBorder.none,
-          counterText: '',
-        ),
-        onChanged: (value) {
-          if (value.isNotEmpty && index < 5) {
-            focusNodes[index + 1].requestFocus();
-          } else if (value.isEmpty && index > 0) {
-            focusNodes[index - 1].requestFocus();
-          }
-        },
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    phoneController.dispose();
-    for (var controller in otpControllers) {
-      controller.dispose();
-    }
-    for (var node in focusNodes) {
-      node.dispose();
-    }
-    super.dispose();
-  }
-}
-
-SizedBox divider() {
-  return SizedBox(
-    width: SizeConfig.screenWidth / 6,
-    child: Divider(thickness: 1),
-  );
-}
-
-Widget socialsButton(Widget icondata, VoidCallback onPressed) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 30),
-    child: SizedBox(
+  static Widget layButton(String img, VoidCallback onPressed) {
+    return SizedBox(
       height: 60,
       width: 60,
       child: Container(
@@ -709,8 +436,47 @@ Widget socialsButton(Widget icondata, VoidCallback onPressed) {
             ),
           ],
         ),
-        child: IconButton(onPressed: onPressed, icon: icondata),
+        child: IconButton(
+          onPressed: onPressed,
+          icon: Image.asset('assets/$img.png'),
+        ),
       ),
-    ),
-  );
+    );
+  }
+
+  divider() {
+    return SizedBox(
+      width: SizeConfig.screenWidth / 6,
+      child: Divider(thickness: 1),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: SizeConfig.screenVPadding),
+          child: Row(
+            children: [
+              SizedBox(width: SizeConfig.blockWidth * 10),
+              divider(),
+              Text('     or continue with    '),
+              divider(),
+            ],
+          ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            layButton('google_logo', () async {
+              await AuthService.googleAuthenticating(context);
+              isNewUser ? context.go('/accountSetup') : null;
+            }),
+            layButton('apple_logo', () {}),
+          ],
+        ),
+      ],
+    );
+  }
 }

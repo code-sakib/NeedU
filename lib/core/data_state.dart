@@ -1,7 +1,7 @@
 // data_state.dart (made async to properly handle futures, improved error catching)
 
 import 'package:firebase_auth/firebase_auth.dart'; // For specific FirebaseAuthException
-import 'package:firebase_core/firebase_core.dart'; // If needed for FirebaseException
+// If needed for FirebaseException
 import 'package:needu/utilis/snackbar.dart';
 
 class DataState {
@@ -12,10 +12,10 @@ class DataState {
       await funcToRun();
     } on FirebaseAuthException catch (e) {
       // Specific handling for auth errors
-      Utilis.showSnackBar('${e.code}: ${e.message}', isErr: true);
+      Utilis.showSnackBar('${e.message}', isErr: true);
     } on FirebaseException catch (e) {
       // General Firebase errors
-      Utilis.showSnackBar('${e.code}: ${e.message}', isErr: true);
+      Utilis.showSnackBar('${e.message}', isErr: true);
     } catch (e) {
       // Generic errors
       Utilis.showSnackBar(e.toString(), isErr: true);

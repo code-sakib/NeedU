@@ -8,7 +8,6 @@ class AppColors {
   static const surface = Color(0xFF1E1E1E);
   static const border = Color(0xFF333333);
   static const text = Color(0xFFFFFFFF);
-  static const textSecondary = Color(0xFFCCCCCC);
   static const textErr = Color(0xFFC56363);
   static const textMuted = Color(0xFF888888);
 
@@ -51,7 +50,7 @@ class AppTypography {
       bodyMedium: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w400,
-        color: AppColors.textSecondary,
+        color: AppColors.text,
         height: 1.4,
       ),
     );
@@ -69,7 +68,7 @@ class AppTheme {
         primary: AppColors.primary,
         secondary: Color(0xFF00CC6A),
         surface: AppColors.surface,
-        error: Colors.red
+        error: Colors.red,
       ),
 
       textTheme: AppTypography.textTheme(),
@@ -106,7 +105,7 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surface,
-        hintStyle: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+        hintStyle: TextStyle(fontSize: 14),
         contentPadding: const EdgeInsets.symmetric(
           vertical: 12,
           horizontal: 16,
