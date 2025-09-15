@@ -1,6 +1,11 @@
 # NeedU — Silent SOS
 
-![SOS page](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/0eyf59jp53a0628xbg81.png)
+<p align="center">
+  <img src="https://dev-to-uploads.s3.amazonaws.com/uploads/articles/0eyf59jp53a0628xbg81.png"
+       alt="SOS page"
+       height="500" />
+</p>
+
 
 
 ## Overview
@@ -97,9 +102,17 @@ lib/
 
 ## Screenshots
 
-![Auth flow preview](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/056iwe6x3g13jk638gh2.png)
+<p align="center">
+  <img src="https://dev-to-uploads.s3.amazonaws.com/uploads/articles/056iwe6x3g13jk638gh2.png"
+       alt="SOS page"
+       height="500" />
+</p>
 
-![Profile UI preview](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/dxpys38fsx3ndcw0r45v.png)
+<p align="center">
+  <img src="https://dev-to-uploads.s3.amazonaws.com/uploads/articles/dxpys38fsx3ndcw0r45v.png"
+       alt="SOS page"
+       height="500" />
+</p>
 
 ---
 
