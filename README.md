@@ -1,9 +1,7 @@
 # NeedU — Silent SOS
 
-![NeedU Preview](./9fc2775e-d8cc-448e-8b97-882111b71df9.png)
+![SOS page](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/0eyf59jp53a0628xbg81.png)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Flutter](https://img.shields.io/badge/Flutter-%5E3.0-blue)](https://flutter.dev)
 
 ## Overview
 
